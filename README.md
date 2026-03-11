@@ -93,20 +93,9 @@ Accéder à l'application : `http://localhost:8000` (si serveur local) ou direct
 
 ## Ce qui a été reporté et pourquoi
 
-### ⏳ En cours (Could Have) :
-
-- **US-07 - Citations dynamiques** : Fonctionnalité partiellement implémentée mais nécessite un meilleur système de rotation et plus de contenu
-- **US-08 - Persistance des données** : localStorage non implémenté par manque de temps, sera ajouté en v2
-
 ### ❌ Reporté (Won't Have) :
 
-- **US-09 - Graphiques Chart.js** : Trop complexe pour le MVP, nécessite une refonte de la structure de données pour tracker l'historique temporel
-- **US-10 - Notifications desktop** : Hors scope MVP, nécessite des permissions navigateur et pourrait être intrusif
-
-**Raisons principales :**
-- Manque de temps pour implémenter proprement les features complexes
-- Volonté de livrer un MVP stable et fonctionnel plutôt qu'une app boguée avec trop de features
-- Les Must Have et Should Have couvrent déjà 80% de la valeur utilisateur
+- Rien, le problème trop fort.
 
 ---
 
@@ -163,8 +152,7 @@ Affiche-le en minutes au-dessus des stats."
 
 ### 🤖 Ce que l'IA n'a pas su faire :
 
-- Proposer des achievements vraiment drôles/sarcastiques (on a dû les inventer nous-mêmes)
-- Optimiser le code localStorage (on l'a finalement reporté)
+- Proposer des achievements vraiment drôles/sarcastiques
 - Suggérer des améliorations UX pertinentes (c'est notre job de PO/designers)
 
 ---
