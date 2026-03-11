@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShouldBeWorking 🎯</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        /* US-07 : Section des citations */
+        .quote-section {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(253, 203, 110, 0.4);
+            border: 3px solid #f39c12;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .quote-section::before {
+            content: '💭';
+            position: absolute;
+            font-size: 6em;
+            opacity: 0.1;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .quote-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(253, 203, 110, 0.6);
+        }
+        .quote-section:active {
+            transform: translateY(0);
+        }
+        .quote-label {
+            text-align: center;
+            color: #d35400;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .quote-text {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.4em;
+            font-style: italic;
+            line-height: 1.6;
+            font-weight: 500;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        .quote-text.fade {
+            opacity: 0;
+        }
+        .quote-hint {
+            text-align: center;
+            color: #d35400;
+            font-size: 0.8em;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        /* US-06 : Bouton Reset en haut à droite */
+        .reset-button {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 107, 107, 0.5);
+            background: linear-gradient(135deg, #ee5a24 0%, #c23616 100%);
+        }
+
+        .reset-button:active {
+            transform: translateY(0);
+        }
+
+        /* US-06 : Modal de confirmation */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+            text-align: center;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-emoji {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .modal-text {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button-cancel {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .modal-button-cancel:hover {
+            background: #dee2e6;
+            transform: translateY(-2px);
+        }
+
+        .modal-button-confirm {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .modal-button-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 107, 107, 0.5);
+        }
+
+        /* US-06 : Message de feedback après reset */
+        .feedback-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(67, 233, 123, 0.6);
+            z-index: 1001;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .feedback-message.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .feedback-emoji {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* US-05 : Popup pour les nouveaux achievements */
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(245, 87, 108, 0.6);
+            z-index: 1000;
+            min-width: 300px;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 3px solid white;
+        }
+
+        .achievement-popup.show {
+            transform: translateX(0);
+            opacity: 1;
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0) scale(1); }
+            50% { transform: translateX(-10px) scale(1.05); }
+        }
+
+        .achievement-popup-header {
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .achievement-popup-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .achievement-popup-emoji {
+            font-size: 1.8em;
+        }
+
+        .achievement-popup-description {
+            font-size: 0.95em;
+            opacity: 0.95;
+            margin-top: 8px;
+        }
+
+        /* US-02 : Compteur total central */
+        .total-counter-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .total-counter-label {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .total-counter-value {
+            color: white;
+            font-size: 5em;
+            font-weight: bold;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        /* Animation quand le compteur augmente */
+        .total-counter-value.bump {
+            animation: bump 0.4s ease;
+        }
+
+        @keyframes bump {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .total-counter-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* US-04 : Styles pour le temps perdu */
+        .time-wasted-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            border: 3px solid #c23616;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-wasted-section::before {
+            content: '⚠️';
+            position: absolute;
+            font-size: 8em;
+            opacity: 0.1;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .time-wasted-label {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-wasted-value {
+            color: white;
+            font-size: 3.5em;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.4);
+            line-height: 1.2;
+        }
+
+        .time-wasted-value.shake {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .time-wasted-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .time-breakdown {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .time-unit {
+            text-align: center;
+            color: white;
+        }
+
+        .time-unit-value {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-unit-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .site-button {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #667eea;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .site-button:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .site-button:active {
+            transform: translateY(-2px);
+        }
+
+        .site-button .emoji {
+            font-size: 2em;
+        }
+
+        .site-counter {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.9em;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            min-width: 30px;
+        }
+
+        .site-button:hover .site-counter {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Couleurs psychédéliques */
+        .psycho-color-1 {
+            background: linear-gradient(135deg, #ff0080 0%, #ff8c00 100%) !important;
+        }
+
+        .psycho-color-2 {
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%) !important;
+        }
+
+        .psycho-color-3 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        }
+
+        .psycho-color-4 {
+            background: linear-gradient(135deg, #ffd140 0%, #ff6b6b 100%) !important;
+        }
+
+        .psycho-color-5 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+        }
+
+        .psycho-color-6 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+        }
+
+        .psycho-color-7 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+        }
+
+        .psycho-color-8 {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+        }
+
+        .psycho-color-9 {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%) !important;
+        }
+
+        .psycho-color-10 {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+        }
+
+        /* US-03 : Styles pour la section statistiques */
+        .stats-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        .stats-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stats-table th {
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+
+        .stats-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stats-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .stats-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .stats-table tbody tr:hover {
+            background: #f1f3f5;
+            transform: translateX(5px);
+        }
+
+        .site-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .count-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .percentage {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        /* US-05 : Section des achievements */
+        .achievements-section {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .achievements-section h3 {
+            color: white;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.8em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .achievements-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 25px;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .achievement-card.unlocked {
+            border-color: #ffd700;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 5px 30px rgba(255, 215, 0, 0.7);
+            }
+        }
+
+        .achievement-card.locked {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        .achievement-emoji {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .achievement-description {
+            color: #666;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .achievement-locked-icon {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                padding-top: 60px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .reset-button {
+                top: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 0.85em;
+            }
+
+            .total-counter-value {
+                font-size: 3.5em;
+            }
+
+            .time-wasted-value {
+                font-size: 2.5em;
+            }
+
+            .time-unit-value {
+                font-size: 1.5em;
+            }
+
+            .buttons-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-section {
+                padding: 20px;
+            }
+
+            .stats-table {
+                font-size: 0.9em;
+            }
+
+            .stats-table th,
+            .stats-table td {
+                padding: 10px;
+            }
+
+            .time-breakdown {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .achievement-popup {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+
+            .achievements-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal {
+                padding: 25px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+        }
+
+    </style>
+</head>
+<body>
+    <!-- US-06 : Modal de confirmation -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-emoji">🗑️</div>
+            <div class="modal-title">Réinitialiser tout ?</div>
+            <div class="modal-text">
+                Es-tu sûr(e) de vouloir tout effacer ? Toutes tes statistiques et achievements seront perdus.<br>
+                <em>(Parfait pour se mentir à soi-même sur sa productivité 😅)</em>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-cancel" onclick="closeModal()">
+                    Annuler
+                </button>
+                <button class="modal-button modal-button-confirm" onclick="confirmReset()">
+                    Oui, tout effacer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- US-06 : Message de feedback -->
+    <div class="feedback-message" id="feedback-message">
+        <span class="feedback-emoji">✨</span>
+        Tout est effacé ! Nouveau départ 🎯
+    </div>
+
+    <!-- US-05 : Popup pour les nouveaux achievements -->
+    <div class="achievement-popup" id="achievement-popup">
+        <div class="achievement-popup-header">🎉 Nouvel Achievement Débloqué !</div>
+        <div class="achievement-popup-title">
+            <span class="achievement-popup-emoji" id="popup-emoji">🏆</span>
+            <span id="popup-title">Achievement</span>
+        </div>
+        <div class="achievement-popup-description" id="popup-description">Description</div>
+    </div>
+
+    <div class="container">
+        <!-- US-06 : Bouton Reset -->
+        <button class="reset-button" onclick="openModal()">
+            🔄 Reset
+        </button>
+
+        <h1>ShouldBeWorking 🎯</h1>
+        <p class="subtitle">Un compteur de procrastination qui te rappelle gentiment que tu devrais bosser</p>
+
+        <!-- US-07 : Section des citations -->
+        <div class="quote-section" onclick="changeQuote()">
+            <div class="quote-label">💬 Citation du moment</div>
+            <div class="quote-text" id="quote-text">La procrastination est le voleur de temps.</div>
+            <div class="quote-hint">👆 Clique pour changer (ou attends 10 secondes)</div>
+        </div>
+
+        <!-- US-02 : Compteur total central -->
+        <div class="total-counter-section">
+            <div class="total-counter-label">Total Procrastinations</div>
+            <div class="total-counter-value" id="total-counter">0</div>
+            <div class="total-counter-subtitle">Bravo, tu es un champion 🏆</div>
+        </div>
+
+        <!-- US-04 : Temps total perdu -->
+        <div class="time-wasted-section">
+            <div class="time-wasted-label">⏰ Temps perdu estimé</div>
+            <div class="time-wasted-value" id="time-wasted-display">0 min</div>
+            <div class="time-wasted-subtitle" id="time-wasted-subtitle">Chaque visite = environ 5 minutes perdues</div>
+            
+            <div class="time-breakdown" id="time-breakdown">
+                <div class="time-unit">
+                    <span class="time-unit-value" id="hours-value">0</span>
+                    <span class="time-unit-label">Heures</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-unit-value" id="minutes-value">0</span>
+                    <span class="time-unit-label">Minutes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- US-01 : Boutons pour comptabiliser les procrastinations -->
+        <div class="buttons-grid">
+            <button class="site-button" onclick="addProcrastination('YouTube')">
+                <span class="emoji">📺</span>
+                <span>YouTube</span>
+                <span class="site-counter" id="counter-YouTube">0</span>
+            </button>
+            <button class="site-button" onclick="addProcrastination('Twitter/X')">
+                <span class="emoji">🐦</span>
+                <span>Twitter/X</span>
+                <span class="site-counter" id="counter-Twitter/X">0</span>
+            </button>
+            <button class="site-button" onclick="addProcrastination('Reddit')">
+                <span class="emoji">🤖</span>
+                <span>Reddit</span>
+                <span class="site-counter" id="counter-Reddit">0</span>
+            </button>
+            <button class="site-button" onclick="addProcrastination('Instagram')">
+                <span class="emoji">📷</span>
+                <span>Instagram</span>
+                <span class="site-counter" id="counter-Instagram">0</span>
+            </button>
+            <button class="site-button" onclick="addProcrastination('TikTok')">
+                <span class="emoji">🎵</span>
+                <span>TikTok</span>
+                <span class="site-counter" id="counter-TikTok">0</span>
+            </button>
+            <button class="site-button" onclick="addProcrastination('Facebook')">
+                <span class="emoji">👥</span>
+                <span>Facebook</span>
+                <span class="site-counter" id="counter-Facebook">0</span>
+            </button>
+        </div>
+
+        <!-- US-05 : Section des achievements -->
+        <div class="achievements-section">
+            <h3>🏆 Achievements</h3>
+            <p class="achievements-subtitle">Collection de tes exploits de procrastination</p>
+            <div class="achievements-grid" id="achievements-grid">
+                <!-- Les achievements seront générés dynamiquement par JavaScript -->
+            </div>
+        </div>
+
+        <!-- US-03 : Statistiques détaillées par site -->
+        <div class="stats-section">
+            <h3>📊 Statistiques détaillées</h3>
+            <p class="stats-subtitle">Découvre quel réseau social te distrait le plus</p>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Site</th>
+                        <th>Visites</th>
+                        <th>Pourcentage</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-body">
+                    <!-- Les lignes seront générées dynamiquement par JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // US-08 : Clé pour le localStorage
+        const STORAGE_KEY = 'shouldBeWorking_data';
+
+        // Données de procrastination
+        let procrastinationData = {
+            'YouTube': 0,
+            'Twitter/X': 0,
+            'Reddit': 0,
+            'Instagram': 0,
+            'TikTok': 0,
+            'Facebook': 0
+        };
+
+        // US-05 : Définition des achievements
+        const achievements = [
+            {
+                id: 'first-time',
+                emoji: '🎯',
+                name: 'Première fois',
+                description: 'Procrastiner pour la première fois',
+                condition: () => getTotalProcrastinations() >= 1,
+                unlocked: false
+            },
+            {
+                id: 'rookie',
+                emoji: '🌱',
+                name: 'Rookie',
+                description: 'Atteindre 10 procrastinations',
+                condition: () => getTotalProcrastinations() >= 10,
+                unlocked: false
+            },
+            {
+                id: 'habitue',
+                emoji: '😅',
+                name: 'Habitué',
+                description: 'Atteindre 25 procrastinations',
+                condition: () => getTotalProcrastinations() >= 25,
+                unlocked: false
+            },
+            {
+                id: 'accro',
+                emoji: '😰',
+                name: 'Accro',
+                description: 'Atteindre 50 procrastinations',
+                condition: () => getTotalProcrastinations() >= 50,
+                unlocked: false
+            },
+            {
+                id: 'master',
+                emoji: '💀',
+                name: 'Maître Procrastinateur',
+                description: 'Atteindre 100 procrastinations',
+                condition: () => getTotalProcrastinations() >= 100,
+                unlocked: false
+            },
+            {
+                id: 'youtube-addict',
+                emoji: '📺',
+                name: 'YouTube Addict',
+                description: '20 visites sur YouTube',
+                condition: () => procrastinationData['YouTube'] >= 20,
+                unlocked: false
+            },
+            {
+                id: 'social-butterfly',
+                emoji: '🦋',
+                name: 'Papillon Social',
+                description: 'Visiter tous les sites au moins une fois',
+                condition: () => Object.values(procrastinationData).every(count => count > 0),
+                unlocked: false
+            }
+        ];
+        // US-07 : Pool de citations motivationnelles/démotivantes
+        const quotes = [
+            "La procrastination est le voleur de temps.",
+            "Tu devrais vraiment bosser là... 🙃",
+            "Encore 5 minutes et tu t'y mets, promis ?",
+            "Spoiler : tu ne vas pas t'y mettre dans 5 minutes.",
+            "Netflix peut attendre. Enfin... peut-être pas.",
+            "Ton futur toi va te détester pour ça.",
+            "Le succès, c'est 1% d'inspiration et 99% de procrastination... wait.",
+            "Fais-le maintenant, remercie-toi plus tard !",
+            "La productivité, c'est surfait de toute façon. 😏",
+            "Aujourd'hui est le jour parfait pour... procrastiner !",
+            "Tu es à un clic de retourner sur YouTube. Résiste !",
+            "Demain, c'est le premier jour du reste de ta procrastination.",
+            "Carpe Diem ! (Mais pas aujourd'hui, hein)",
+            "Le travail, c'est la santé... rien faire, c'est la conserver ! 😂",
+            "Allez, un petit effort ! Ou pas. C'est toi qui vois."
+        ];
+
+        let currentQuoteIndex = 0;
+        let quoteInterval;
+
+        // US-07 : Fonction pour changer de citation
+        function changeQuote() {
+            const quoteElement = document.getElementById('quote-text');
+            
+            // Effet de fade
+            quoteElement.classList.add('fade');
+            
+            setTimeout(() => {
+                // Choisir une citation aléatoire différente de la précédente
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * quotes.length);
+                } while (newIndex === currentQuoteIndex && quotes.length > 1);
+                
+                currentQuoteIndex = newIndex;
+                quoteElement.textContent = quotes[currentQuoteIndex];
+                
+                // Retirer le fade
+                quoteElement.classList.remove('fade');
+            }, 300);
+            
+            // Réinitialiser l'intervalle automatique
+            clearInterval(quoteInterval);
+            startQuoteRotation();
+        }
+
+        // US-07 : Fonction pour démarrer la rotation automatique
+        function startQuoteRotation() {
+            quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
+        }
+
+        // US-07 : Pool de citations motivationnelles/démotivantes
+        const quotes = [
+            "La procrastination est le voleur de temps.",
+            "Tu devrais vraiment bosser là... 🙃",
+            "Encore 5 minutes et tu t'y mets, promis ?",
+            "Spoiler : tu ne vas pas t'y mettre dans 5 minutes.",
+            "Netflix peut attendre. Enfin... peut-être pas.",
+            "Ton futur toi va te détester pour ça.",
+            "Le succès, c'est 1% d'inspiration et 99% de procrastination... wait.",
+            "Fais-le maintenant, remercie-toi plus tard !",
+            "La productivité, c'est surfait de toute façon. 😏",
+            "Aujourd'hui est le jour parfait pour... procrastiner !",
+            "Tu es à un clic de retourner sur YouTube. Résiste !",
+            "Demain, c'est le premier jour du reste de ta procrastination.",
+            "Carpe Diem ! (Mais pas aujourd'hui, hein)",
+            "Le travail, c'est la santé... rien faire, c'est la conserver ! 😂",
+            "Allez, un petit effort ! Ou pas. C'est toi qui vois."
+        ];
+
+        let currentQuoteIndex = 0;
+        let quoteInterval;
+
+        // US-08 : Fonction pour sauvegarder dans le localStorage
+        function saveToLocalStorage() {
+            try {
+                const dataToSave = {
+                    procrastinationData: procrastinationData,
+                    achievements: achievements.map(a => ({
+                        id: a.id,
+                        unlocked: a.unlocked
+                    })),
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                console.log('💾 Données sauvegardées dans localStorage');
+            } catch (error) {
+                console.error('❌ Erreur lors de la sauvegarde:', error);
+            }
+        }
+
+        // US-08 : Fonction pour charger depuis le localStorage
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    
+                    // Restaurer les données de procrastination
+                    if (parsed.procrastinationData) {
+                        procrastinationData = parsed.procrastinationData;
+                        
+                        // Mettre à jour les compteurs visuels
+                        for (let site in procrastinationData) {
+                            const counterElement = document.getElementById(`counter-${site}`);
+                            if (counterElement) {
+                                counterElement.textContent = procrastinationData[site];
+                            }
+                        }
+                    }
+                    
+                    // Restaurer les achievements débloqués
+                    if (parsed.achievements) {
+                        parsed.achievements.forEach(savedAchievement => {
+                            const achievement = achievements.find(a => a.id === savedAchievement.id);
+                            if (achievement) {
+                                achievement.unlocked = savedAchievement.unlocked;
+                            }
+                        });
+                    }
+                    
+                    console.log('✅ Données chargées depuis localStorage');
+                    console.log('📊 Total procrastinations:', getTotalProcrastinations());
+                    
+                    // Afficher un message de bienvenue
+                    const total = getTotalProcrastinations();
+                    if (total > 0) {
+                        console.log(`👋 Bon retour ! Tu as déjà ${total} procrastinations à ton compteur.`);
+                    }
+                    
+                    return true;
+                } else {
+                    console.log('🆕 Première visite ! Aucune donnée sauvegardée.');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement:', error);
+                return false;
+            }
+        }
+
+        // US-07 : Fonction pour changer de citation
+        function changeQuote() {
+            const quoteElement = document.getElementById('quote-text');
+            
+            // Effet de fade
+            quoteElement.classList.add('fade');
+            
+            setTimeout(() => {
+                // Choisir une citation aléatoire différente de la précédente
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * quotes.length);
+                } while (newIndex === currentQuoteIndex && quotes.length > 1);
+                
+                currentQuoteIndex = newIndex;
+                quoteElement.textContent = quotes[currentQuoteIndex];
+                
+                // Retirer le fade
+                quoteElement.classList.remove('fade');
+            }, 300);
+            
+            // Réinitialiser l'intervalle automatique
+            clearInterval(quoteInterval);
+            startQuoteRotation();
+        }
+
+        // US-07 : Fonction pour démarrer la rotation automatique
+        function startQuoteRotation() {
+            quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
+        }
+
+        // US-06 : Fonction pour ouvrir le modal
+        function openModal() {
+            document.getElementById('modal-overlay').classList.add('show');
+        }
+
+        // US-06 : Fonction pour fermer le modal
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+        }
+
+        // US-06 : Fonction pour confirmer le reset
+        function confirmReset() {
+            // Fermer le modal
+            closeModal();
+
+            // Réinitialiser toutes les données
+            for (let site in procrastinationData) {
+                procrastinationData[site] = 0;
+                document.getElementById(`counter-${site}`).textContent = '0';
+            }
+
+            // Reverrouiller tous les achievements
+            achievements.forEach(achievement => {
+                achievement.unlocked = false;
+            });
+
+            // US-08 : Sauvegarder l'état réinitialisé
+            saveToLocalStorage();
+
+            // Mettre à jour tous les affichages
+            updateTotalCounter();
+            updateTimeWasted();
+            updateStats();
+            updateAchievementsDisplay();
+            // US-07 : Démarrer la rotation des citations
+            startQuoteRotation();
+
+            // Afficher le message de feedback
+            showFeedbackMessage();
+
+            console.log('✨ Toutes les données ont été réinitialisées et sauvegardées !');
+        }
+
+        // US-06 : Fonction pour afficher le message de feedback
+        function showFeedbackMessage() {
+            const feedback = document.getElementById('feedback-message');
+            feedback.classList.add('show');
+
+            // Masquer après 3 secondes
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 3000);
+        }
+
+        // Fermer le modal si on clique en dehors
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-overlay') {
+                closeModal();
+            }
+        });
+
+        // US-05 : Fonction pour afficher la popup d'achievement
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievement-popup');
+            const emojiEl = document.getElementById('popup-emoji');
+            const titleEl = document.getElementById('popup-title');
+            const descEl = document.getElementById('popup-description');
+
+            emojiEl.textContent = achievement.emoji;
+            titleEl.textContent = achievement.name;
+            descEl.textContent = achievement.description;
+
+            popup.classList.add('show');
+
+            // Masquer après 4 secondes
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 4000);
+        }
+
+        // US-05 : Fonction pour vérifier et débloquer les achievements
+        function checkAchievements() {
+            achievements.forEach(achievement => {
+                if (!achievement.unlocked && achievement.condition()) {
+                    achievement.unlocked = true;
+                    showAchievementPopup(achievement);
+                }
+            });
+            updateAchievementsDisplay();
+        }
+
+        // US-05 : Fonction pour afficher les achievements
+        function updateAchievementsDisplay() {
+            const grid = document.getElementById('achievements-grid');
+            grid.innerHTML = '';
+
+            achievements.forEach(achievement => {
+                const card = document.createElement('div');
+                card.className = `achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+                
+                if (achievement.unlocked) {
+                    card.innerHTML = `
+                        <span class="achievement-emoji">${achievement.emoji}</span>
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-description">${achievement.description}</div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <span class="achievement-locked-icon">🔒</span>
+                        <div class="achievement-name">???</div>
+                        <div class="achievement-description">Achievement verrouillé</div>
+                    `;
+                }
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // US-02 : Fonction pour calculer le total
+        function getTotalProcrastinations() {
+            return Object.values(procrastinationData).reduce((sum, count) => sum + count, 0);
+        }
+
+        // US-04 : Fonction pour calculer le temps perdu (5 min par visite)
+        function calculateTimeWasted() {
+            const total = getTotalProcrastinations();
+            const totalMinutes = total * 5;
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            
+            return { totalMinutes, hours, minutes };
+        }
+
+        // US-04 : Fonction pour mettre à jour l'affichage du temps perdu
+        function updateTimeWasted() {
+            const { totalMinutes, hours, minutes } = calculateTimeWasted();
+            const displayElement = document.getElementById('time-wasted-display');
+            const subtitleElement = document.getElementById('time-wasted-subtitle');
+            const hoursElement = document.getElementById('hours-value');
+            const minutesElement = document.getElementById('minutes-value');
+            
+            // Animation shake
+            displayElement.classList.remove('shake');
+            void displayElement.offsetWidth; // Force reflow
+            displayElement.classList.add('shake');
+            
+            // Affichage principal : si > 60 min, afficher en heures
+            if (totalMinutes >= 60) {
+                displayElement.textContent = `${hours}h ${minutes}min`;
+            } else {
+                displayElement.textContent = `${totalMinutes} min`;
+            }
+            
+            // Mise à jour du breakdown
+            hoursElement.textContent = hours;
+            minutesElement.textContent = minutes;
+            
+            // Messages sarcastiques selon le temps perdu
+            if (totalMinutes === 0) {
+                subtitleElement.textContent = "Chaque visite = environ 5 minutes perdues";
+            } else if (totalMinutes < 30) {
+                subtitleElement.textContent = "Pas mal, ça commence à grimper... 😅";
+            } else if (totalMinutes < 60) {
+                subtitleElement.textContent = "Presque une heure de perdue, bravo ! 😬";
+            } else if (totalMinutes < 120) {
+                subtitleElement.textContent = "Plus d'une heure... Tu devrais peut-être bosser ? 🤔";
+            } else if (totalMinutes < 240) {
+                subtitleElement.textContent = "Plusieurs heures perdues, impressionnant ! 😱";
+            } else {
+                subtitleElement.textContent = "Tu es officiellement un pro de la procrastination ! 🏆";
+            }
+        }
+
+        // US-02 : Fonction pour mettre à jour le compteur total
+        function updateTotalCounter() {
+            const totalElement = document.getElementById('total-counter');
+            const total = getTotalProcrastinations();
+            
+            // Animation "bump" quand le compteur change
+            totalElement.classList.remove('bump');
+            void totalElement.offsetWidth; // Force reflow pour réinitialiser l'animation
+            totalElement.classList.add('bump');
+            
+            // Mise à jour du nombre
+            totalElement.textContent = total;
+        }
+
+        // US-03 : Fonction pour mettre à jour les statistiques détaillées
+        function updateStats() {
+            const total = getTotalProcrastinations();
+            const sites = ['YouTube', 'Twitter/X', 'Reddit', 'Instagram', 'TikTok', 'Facebook'];
+            const emojis = {
+                'YouTube': '📺',
+                'Twitter/X': '🐦',
+                'Reddit': '🤖',
+                'Instagram': '📷',
+                'TikTok': '🎵',
+                'Facebook': '👥'
+            };
+
+            const statsBody = document.getElementById('stats-body');
+            statsBody.innerHTML = '';
+
+            sites.forEach(site => {
+                const count = procrastinationData[site];
+                const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="site-name">${emojis[site]} ${site}</td>
+                    <td><span class="count-badge">${count}</span></td>
+                    <td><span class="percentage">${percentage}%</span></td>
+                `;
+                statsBody.appendChild(row);
+            });
+        }
+
+        // US-01 : Fonction pour ajouter une procrastination
+        function addProcrastination(site) {
+            procrastinationData[site]++;
+            
+            // Mettre à jour le compteur visuel du bouton
+            document.getElementById(`counter-${site}`).textContent = procrastinationData[site];
+            
+            // US-02 : Mettre à jour le compteur total
+            updateTotalCounter();
+
+            // US-03 : Mettre à jour les statistiques
+            updateStats();
+
+            // US-04 : Mettre à jour le temps perdu
+            updateTimeWasted();
+
+            // US-05 : Vérifier les achievements
+            checkAchievements();
+
+            // US-08 : Sauvegarder automatiquement après chaque clic
+            saveToLocalStorage();
+            
+            // Changer aléatoirement la couleur du bouton cliqué
+            const button = event.currentTarget;
+            const randomColor = Math.floor(Math.random() * 10) + 1;
+            
+            // Retirer toutes les classes psycho précédentes
+            for (let i = 1; i <= 10; i++) {
+                button.classList.remove(`psycho-color-${i}`);
+            }
+            
+            // Ajouter la nouvelle couleur
+            button.classList.add(`psycho-color-${randomColor}`);
+            
+            console.log(`Procrastination ajoutée sur ${site}. Total: ${procrastinationData[site]}`);
+            console.log(`Total général: ${getTotalProcrastinations()}`);
+            console.log(`Temps perdu: ${calculateTimeWasted().totalMinutes} minutes`);
+        }
+
+        // US-08 : Initialiser au chargement de la page
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Application ShouldBeWorking chargée');
+            
+            // Charger les données sauvegardées
+            const hasExistingData = loadFromLocalStorage();
+            
+            // Mettre à jour l'affichage avec les données chargées
+            updateTotalCounter();
+            updateStats();
+            updateTimeWasted();
+            updateAchievementsDisplay();
+            
+            // Démarrer la rotation des citations
+            startQuoteRotation();
+            
+            if (!hasExistingData) {
+                console.log('👋 Bienvenue ! Commence à tracker ta procrastination en cliquant sur les boutons.');
+            }
+        });
+    </script>
+</body>
+</html>
