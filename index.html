@@ -129,6 +129,45 @@
             gap: 8px;
         }
 
+        /* US-10 : Bouton Notifications en haut à gauche */
+        .notification-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notification-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .notification-button:active {
+            transform: translateY(0);
+        }
+
+        .notification-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #95a5a6;
+        }
+
+        .notification-button.active {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        }
+
         .reset-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 7px 20px rgba(255, 107, 107, 0.5);
@@ -813,6 +852,14 @@
                 font-size: 0.85em;
             }
 
+            .notification-button {
+                top: 15px;
+                left: 15px;
+                padding: 10px 15px;
+                font-size: 0.85em;
+                gap: 5px;
+            }
+
             .total-counter-value {
                 font-size: 3.5em;
             }
@@ -915,6 +962,12 @@
     </div>
 
     <div class="container">
+        <!-- US-10 : Bouton Notifications -->
+        <button class="notification-button" id="notification-button" onclick="toggleNotifications()">
+            <span id="notif-icon">🔔</span>
+            <span id="notif-text">Activer notifications</span>
+        </button>
+
         <!-- US-06 : Bouton Reset -->
         <button class="reset-button" onclick="openModal()">
             🔄 Reset
@@ -1059,6 +1112,47 @@
         
         // US-09 : Historique simulé sur 7 jours (pour démonstration)
         let weeklyHistory = [];
+
+        // US-10 : Variables pour les notifications desktop
+        let notificationsEnabled = false;
+        const NOTIFICATION_THRESHOLD = 10; // Notification après 10 procrastinations
+        let lastNotificationCount = 0;
+
+        // US-10 : Messages pour les notifications
+        const notificationMessages = [
+            {
+                title: "🚨 Alerte Procrastination !",
+                body: "Tu as déjà procrastiné 10 fois... Tu ne devrais pas bosser là ?"
+            },
+            {
+                title: "⏰ Rappel Productivité",
+                body: "Hey ! Ça fait un moment que tu cliques partout. Retourne bosser ! 😅"
+            },
+            {
+                title: "🎯 ShouldBeWorking te surveille",
+                body: "10 procrastinations de plus ! Ton futur toi va te détester pour ça."
+            },
+            {
+                title: "💼 Message de ton boss imaginaire",
+                body: "J'ai remarqué que tu procrastinais beaucoup. On doit parler. 😬"
+            },
+            {
+                title: "📊 Stats en temps réel",
+                body: "Encore 10 visites sur les réseaux sociaux. La productivité, ça te dit quelque chose ?"
+            },
+            {
+                title: "🔔 Notification inutile",
+                body: "Mais bon, puisque t'es déjà distrait(e), autant continuer non ? 🙃"
+            },
+            {
+                title: "⚠️ Attention !",
+                body: "Si tu continues comme ça, tu vas battre ton record de procrastination !"
+            },
+            {
+                title: "💡 Idée du jour",
+                body: "Et si tu essayais de... travailler ? Juste une idée comme ça."
+            }
+        ];
 
         // US-05 : Définition des achievements
         const achievements = [
@@ -1272,6 +1366,154 @@
             quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
         }
 
+        // US-10 : Fonction pour vérifier le support des notifications
+        function checkNotificationSupport() {
+            if (!("Notification" in window)) {
+                console.log("❌ Ce navigateur ne supporte pas les notifications desktop");
+                return false;
+            }
+            return true;
+        }
+
+        // US-10 : Fonction pour activer/désactiver les notifications
+        async function toggleNotifications() {
+            console.log("🔔 toggleNotifications appelée");
+            console.log("   - notificationsEnabled avant:", notificationsEnabled);
+            
+            if (!checkNotificationSupport()) {
+                alert("Ton navigateur ne supporte pas les notifications desktop 😢");
+                return;
+            }
+
+            const button = document.getElementById('notification-button');
+            const icon = document.getElementById('notif-icon');
+            const text = document.getElementById('notif-text');
+
+            if (!notificationsEnabled) {
+                // Demander la permission
+                console.log("   - Demande de permission...");
+                try {
+                    const permission = await Notification.requestPermission();
+                    console.log("   - Permission obtenue:", permission);
+                    
+                    if (permission === "granted") {
+                        notificationsEnabled = true;
+                        button.classList.add('active');
+                        icon.textContent = '🔔';
+                        text.textContent = 'Notifications activées';
+                        
+                        console.log("✅ Notifications activées via bouton");
+                        console.log("   - notificationsEnabled après:", notificationsEnabled);
+                        
+                        // Notification de test (version simplifiée)
+                        try {
+                            const testNotif = new Notification("✅ Notifications activées !", {
+                                body: "Tu seras rappelé à l'ordre toutes les 10 procrastinations 😅",
+                                tag: 'activation-test'
+                            });
+                            
+                            testNotif.onclick = function() {
+                                window.focus();
+                                testNotif.close();
+                            };
+                        } catch (error) {
+                            console.error('Erreur notification de test:', error);
+                        }
+                    } else if (permission === "denied") {
+                        button.classList.add('disabled');
+                        icon.textContent = '🔕';
+                        text.textContent = 'Refusées';
+                        alert("Tu as refusé les notifications. Active-les dans les paramètres de ton navigateur si tu changes d'avis !");
+                    }
+                } catch (error) {
+                    console.error("Erreur lors de la demande de permission:", error);
+                }
+            } else {
+                // Désactiver les notifications
+                notificationsEnabled = false;
+                button.classList.remove('active');
+                icon.textContent = '🔔';
+                text.textContent = 'Activer notifications';
+                console.log("🔕 Notifications désactivées");
+                console.log("   - notificationsEnabled après:", notificationsEnabled);
+            }
+        }
+
+        // US-10 : Fonction pour envoyer une notification de rappel
+        function sendProcrastinationNotification() {
+            if (!notificationsEnabled || !checkNotificationSupport()) {
+                return;
+            }
+
+            // Vérifier si on a atteint le seuil
+            const total = getTotalProcrastinations();
+            const threshold = Math.floor(total / NOTIFICATION_THRESHOLD);
+            
+            if (threshold > lastNotificationCount) {
+                lastNotificationCount = threshold;
+                
+                // Choisir un message aléatoire
+                const randomMessage = notificationMessages[Math.floor(Math.random() * notificationMessages.length)];
+                
+                // Envoyer la notification (version simplifiée sans icônes problématiques)
+                try {
+                    const notification = new Notification(randomMessage.title, {
+                        body: randomMessage.body,
+                        requireInteraction: false,
+                        silent: false,
+                        tag: 'procrastination-alert'
+                    });
+
+                    // Action au clic sur la notification
+                    notification.onclick = function() {
+                        window.focus();
+                        notification.close();
+                    };
+
+                    console.log(`🔔 Notification envoyée après ${total} procrastinations`);
+                } catch (error) {
+                    console.error('❌ Erreur lors de l\'envoi de la notification:', error);
+                }
+            }
+        }
+
+        // US-10 : Fonction pour mettre à jour le statut du bouton au chargement
+        function updateNotificationButtonState() {
+            console.log("🔍 updateNotificationButtonState appelée");
+            console.log("   - Notification support:", checkNotificationSupport());
+            console.log("   - Notification.permission:", Notification.permission);
+            
+            if (!checkNotificationSupport()) {
+                const button = document.getElementById('notification-button');
+                button.classList.add('disabled');
+                button.disabled = true;
+                document.getElementById('notif-text').textContent = 'Non supporté';
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                const button = document.getElementById('notification-button');
+                const icon = document.getElementById('notif-icon');
+                const text = document.getElementById('notif-text');
+                
+                notificationsEnabled = true;
+                button.classList.add('active');
+                icon.textContent = '🔔';
+                text.textContent = 'Notifications activées';
+                
+                console.log("✅ Notifications auto-activées (permission déjà granted)");
+                console.log("   - notificationsEnabled:", notificationsEnabled);
+            } else if (Notification.permission === "denied") {
+                const button = document.getElementById('notification-button');
+                button.classList.add('disabled');
+                document.getElementById('notif-icon').textContent = '🔕';
+                document.getElementById('notif-text').textContent = 'Refusées';
+                console.log("❌ Notifications refusées par l'utilisateur");
+            } else {
+                console.log("⏳ Permission pas encore demandée (default)");
+            }
+        }
+
         // US-06 : Fonction pour ouvrir le modal
         function openModal() {
             document.getElementById('modal-overlay').classList.add('show');
@@ -1297,6 +1539,9 @@
             achievements.forEach(achievement => {
                 achievement.unlocked = false;
             });
+
+            // US-10 : Réinitialiser le compteur de notifications
+            lastNotificationCount = 0;
 
             // US-08 : Sauvegarder l'état réinitialisé
             saveToLocalStorage();
@@ -1655,6 +1900,9 @@
             // US-09 : Mettre à jour les graphiques
             updateCharts();
 
+            // US-10 : Envoyer une notification si nécessaire
+            sendProcrastinationNotification();
+
             // US-08 : Sauvegarder automatiquement après chaque clic
             saveToLocalStorage();
             
@@ -1692,6 +1940,9 @@
             initSitesChart();
             initEvolutionChart();
             updateCharts(); // Mettre à jour avec les données existantes
+            
+            // US-10 : Mettre à jour le statut du bouton notifications
+            updateNotificationButtonState();
             
             // Démarrer la rotation des citations
             startQuoteRotation();
