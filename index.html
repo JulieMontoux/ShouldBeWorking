@@ -958,8 +958,11 @@
     </div>
 
     <script>
+        // US-08 : Clé pour le localStorage
+        const STORAGE_KEY = 'shouldBeWorking_data';
+
         // Données de procrastination
-        const procrastinationData = {
+        let procrastinationData = {
             'YouTube': 0,
             'Twitter/X': 0,
             'Reddit': 0,
@@ -1080,6 +1083,128 @@
             quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
         }
 
+        // US-07 : Pool de citations motivationnelles/démotivantes
+        const quotes = [
+            "La procrastination est le voleur de temps.",
+            "Tu devrais vraiment bosser là... 🙃",
+            "Encore 5 minutes et tu t'y mets, promis ?",
+            "Spoiler : tu ne vas pas t'y mettre dans 5 minutes.",
+            "Netflix peut attendre. Enfin... peut-être pas.",
+            "Ton futur toi va te détester pour ça.",
+            "Le succès, c'est 1% d'inspiration et 99% de procrastination... wait.",
+            "Fais-le maintenant, remercie-toi plus tard !",
+            "La productivité, c'est surfait de toute façon. 😏",
+            "Aujourd'hui est le jour parfait pour... procrastiner !",
+            "Tu es à un clic de retourner sur YouTube. Résiste !",
+            "Demain, c'est le premier jour du reste de ta procrastination.",
+            "Carpe Diem ! (Mais pas aujourd'hui, hein)",
+            "Le travail, c'est la santé... rien faire, c'est la conserver ! 😂",
+            "Allez, un petit effort ! Ou pas. C'est toi qui vois."
+        ];
+
+        let currentQuoteIndex = 0;
+        let quoteInterval;
+
+        // US-08 : Fonction pour sauvegarder dans le localStorage
+        function saveToLocalStorage() {
+            try {
+                const dataToSave = {
+                    procrastinationData: procrastinationData,
+                    achievements: achievements.map(a => ({
+                        id: a.id,
+                        unlocked: a.unlocked
+                    })),
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                console.log('💾 Données sauvegardées dans localStorage');
+            } catch (error) {
+                console.error('❌ Erreur lors de la sauvegarde:', error);
+            }
+        }
+
+        // US-08 : Fonction pour charger depuis le localStorage
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    
+                    // Restaurer les données de procrastination
+                    if (parsed.procrastinationData) {
+                        procrastinationData = parsed.procrastinationData;
+                        
+                        // Mettre à jour les compteurs visuels
+                        for (let site in procrastinationData) {
+                            const counterElement = document.getElementById(`counter-${site}`);
+                            if (counterElement) {
+                                counterElement.textContent = procrastinationData[site];
+                            }
+                        }
+                    }
+                    
+                    // Restaurer les achievements débloqués
+                    if (parsed.achievements) {
+                        parsed.achievements.forEach(savedAchievement => {
+                            const achievement = achievements.find(a => a.id === savedAchievement.id);
+                            if (achievement) {
+                                achievement.unlocked = savedAchievement.unlocked;
+                            }
+                        });
+                    }
+                    
+                    console.log('✅ Données chargées depuis localStorage');
+                    console.log('📊 Total procrastinations:', getTotalProcrastinations());
+                    
+                    // Afficher un message de bienvenue
+                    const total = getTotalProcrastinations();
+                    if (total > 0) {
+                        console.log(`👋 Bon retour ! Tu as déjà ${total} procrastinations à ton compteur.`);
+                    }
+                    
+                    return true;
+                } else {
+                    console.log('🆕 Première visite ! Aucune donnée sauvegardée.');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement:', error);
+                return false;
+            }
+        }
+
+        // US-07 : Fonction pour changer de citation
+        function changeQuote() {
+            const quoteElement = document.getElementById('quote-text');
+            
+            // Effet de fade
+            quoteElement.classList.add('fade');
+            
+            setTimeout(() => {
+                // Choisir une citation aléatoire différente de la précédente
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * quotes.length);
+                } while (newIndex === currentQuoteIndex && quotes.length > 1);
+                
+                currentQuoteIndex = newIndex;
+                quoteElement.textContent = quotes[currentQuoteIndex];
+                
+                // Retirer le fade
+                quoteElement.classList.remove('fade');
+            }, 300);
+            
+            // Réinitialiser l'intervalle automatique
+            clearInterval(quoteInterval);
+            startQuoteRotation();
+        }
+
+        // US-07 : Fonction pour démarrer la rotation automatique
+        function startQuoteRotation() {
+            quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
+        }
+
         // US-06 : Fonction pour ouvrir le modal
         function openModal() {
             document.getElementById('modal-overlay').classList.add('show');
@@ -1106,6 +1231,9 @@
                 achievement.unlocked = false;
             });
 
+            // US-08 : Sauvegarder l'état réinitialisé
+            saveToLocalStorage();
+
             // Mettre à jour tous les affichages
             updateTotalCounter();
             updateTimeWasted();
@@ -1117,7 +1245,7 @@
             // Afficher le message de feedback
             showFeedbackMessage();
 
-            console.log('✨ Toutes les données ont été réinitialisées !');
+            console.log('✨ Toutes les données ont été réinitialisées et sauvegardées !');
         }
 
         // US-06 : Fonction pour afficher le message de feedback
@@ -1312,6 +1440,9 @@
 
             // US-05 : Vérifier les achievements
             checkAchievements();
+
+            // US-08 : Sauvegarder automatiquement après chaque clic
+            saveToLocalStorage();
             
             // Changer aléatoirement la couleur du bouton cliqué
             const button = event.currentTarget;
@@ -1330,10 +1461,26 @@
             console.log(`Temps perdu: ${calculateTimeWasted().totalMinutes} minutes`);
         }
 
-        // Initialiser au chargement de la page
-        updateStats();
-        updateTimeWasted();
-        updateAchievementsDisplay();
+        // US-08 : Initialiser au chargement de la page
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Application ShouldBeWorking chargée');
+            
+            // Charger les données sauvegardées
+            const hasExistingData = loadFromLocalStorage();
+            
+            // Mettre à jour l'affichage avec les données chargées
+            updateTotalCounter();
+            updateStats();
+            updateTimeWasted();
+            updateAchievementsDisplay();
+            
+            // Démarrer la rotation des citations
+            startQuoteRotation();
+            
+            if (!hasExistingData) {
+                console.log('👋 Bienvenue ! Commence à tracker ta procrastination en cliquant sur les boutons.');
+            }
+        });
     </script>
 </body>
 </html>
