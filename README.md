@@ -40,7 +40,7 @@ En tant que **développeur/étudiant/professionnel**, ce projet permet de **pren
 | US-07 | En tant qu'utilisateur, je veux voir des citations motivationnelles/démotivantes qui changent afin de me rappeler que je devrais bosser | **C** (Could) | ✅ Livré |
 | US-08 | En tant qu'utilisateur, je veux que mes données persistent entre les sessions afin de ne pas perdre mon historique de procrastination | **C** (Could) | ✅ Livré |
 | US-09 | En tant qu'utilisateur, je veux des graphiques visuels (chart.js) montrant l'évolution de ma procrastination dans le temps | **C** (Could) | ✅ Livré |
-| US-10 | En tant qu'utilisateur, je veux recevoir une notification desktop quand je procrastine trop afin d'être rappelé à l'ordre | **W** (Won't) | ❌ Reporté |
+| US-10 | En tant qu'utilisateur, je veux recevoir une notification desktop quand je procrastine trop afin d'être rappelé à l'ordre | **W** (Won't) | ✅ Livré |
 
 ---
 
