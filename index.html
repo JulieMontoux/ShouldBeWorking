@@ -44,6 +44,68 @@
             font-style: italic;
         }
 
+        /* NOUVEAU : Compteur total central */
+        .total-counter-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .total-counter-label {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .total-counter-value {
+            color: white;
+            font-size: 5em;
+            font-weight: bold;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        /* Animation quand le compteur augmente */
+        .total-counter-value.bump {
+            animation: bump 0.4s ease;
+        }
+
+        @keyframes bump {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .total-counter-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
         .buttons-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -147,6 +209,10 @@
                 font-size: 2em;
             }
 
+            .total-counter-value {
+                font-size: 3.5em;
+            }
+
             .buttons-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -157,6 +223,13 @@
     <div class="container">
         <h1>ShouldBeWorking 🎯</h1>
         <p class="subtitle">Un compteur de procrastination qui te rappelle gentiment que tu devrais bosser</p>
+
+        <!-- NOUVEAU : Compteur total central -->
+        <div class="total-counter-section">
+            <div class="total-counter-label">Total Procrastinations</div>
+            <div class="total-counter-value" id="total-counter">0</div>
+            <div class="total-counter-subtitle">Bravo, tu es un champion 🏆</div>
+        </div>
 
         <div class="buttons-grid">
             <button class="site-button" onclick="addProcrastination('YouTube')">
@@ -203,12 +276,34 @@
             'Facebook': 0
         };
 
-        // Fonction pour ajouter une procrastination
+        // NOUVEAU : Fonction pour calculer le total
+        function getTotalProcrastinations() {
+            return Object.values(procrastinationData).reduce((sum, count) => sum + count, 0);
+        }
+
+        // NOUVEAU : Fonction pour mettre à jour le compteur total
+        function updateTotalCounter() {
+            const totalElement = document.getElementById('total-counter');
+            const total = getTotalProcrastinations();
+            
+            // Animation "bump" quand le compteur change
+            totalElement.classList.remove('bump');
+            void totalElement.offsetWidth; // Force reflow pour réinitialiser l'animation
+            totalElement.classList.add('bump');
+            
+            // Mise à jour du nombre
+            totalElement.textContent = total;
+        }
+
+        // Fonction pour ajouter une procrastination (MODIFIÉE)
         function addProcrastination(site) {
             procrastinationData[site]++;
             
             // Mettre à jour le compteur visuel du bouton
             document.getElementById(`counter-${site}`).textContent = procrastinationData[site];
+            
+            // NOUVEAU : Mettre à jour le compteur total
+            updateTotalCounter();
             
             // Changer aléatoirement la couleur du bouton cliqué
             const button = event.currentTarget;
@@ -223,6 +318,7 @@
             button.classList.add(`psycho-color-${randomColor}`);
             
             console.log(`Procrastination ajoutée sur ${site}. Total: ${procrastinationData[site]}`);
+            console.log(`Total général: ${getTotalProcrastinations()}`);
         }
     </script>
 </body>
