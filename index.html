@@ -106,6 +106,95 @@
             font-style: italic;
         }
 
+        /* US-04 : Styles pour le temps perdu */
+        .time-wasted-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            border: 3px solid #c23616;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-wasted-section::before {
+            content: '⚠️';
+            position: absolute;
+            font-size: 8em;
+            opacity: 0.1;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .time-wasted-label {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-wasted-value {
+            color: white;
+            font-size: 3.5em;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.4);
+            line-height: 1.2;
+        }
+
+        .time-wasted-value.shake {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .time-wasted-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .time-breakdown {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .time-unit {
+            text-align: center;
+            color: white;
+        }
+
+        .time-unit-value {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-unit-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
         .buttons-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -301,6 +390,14 @@
                 font-size: 3.5em;
             }
 
+            .time-wasted-value {
+                font-size: 2.5em;
+            }
+
+            .time-unit-value {
+                font-size: 1.5em;
+            }
+
             .buttons-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -317,6 +414,11 @@
             .stats-table td {
                 padding: 10px;
             }
+
+            .time-breakdown {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -330,6 +432,24 @@
             <div class="total-counter-label">Total Procrastinations</div>
             <div class="total-counter-value" id="total-counter">0</div>
             <div class="total-counter-subtitle">Bravo, tu es un champion 🏆</div>
+        </div>
+
+        <!-- US-04 : Temps total perdu -->
+        <div class="time-wasted-section">
+            <div class="time-wasted-label">⏰ Temps perdu estimé</div>
+            <div class="time-wasted-value" id="time-wasted-display">0 min</div>
+            <div class="time-wasted-subtitle" id="time-wasted-subtitle">Chaque visite = environ 5 minutes perdues</div>
+            
+            <div class="time-breakdown" id="time-breakdown">
+                <div class="time-unit">
+                    <span class="time-unit-value" id="hours-value">0</span>
+                    <span class="time-unit-label">Heures</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-unit-value" id="minutes-value">0</span>
+                    <span class="time-unit-label">Minutes</span>
+                </div>
+            </div>
         </div>
 
         <!-- US-01 : Boutons pour comptabiliser les procrastinations -->
@@ -401,6 +521,56 @@
             return Object.values(procrastinationData).reduce((sum, count) => sum + count, 0);
         }
 
+        // US-04 : Fonction pour calculer le temps perdu (5 min par visite)
+        function calculateTimeWasted() {
+            const total = getTotalProcrastinations();
+            const totalMinutes = total * 5;
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            
+            return { totalMinutes, hours, minutes };
+        }
+
+        // US-04 : Fonction pour mettre à jour l'affichage du temps perdu
+        function updateTimeWasted() {
+            const { totalMinutes, hours, minutes } = calculateTimeWasted();
+            const displayElement = document.getElementById('time-wasted-display');
+            const subtitleElement = document.getElementById('time-wasted-subtitle');
+            const hoursElement = document.getElementById('hours-value');
+            const minutesElement = document.getElementById('minutes-value');
+            
+            // Animation shake
+            displayElement.classList.remove('shake');
+            void displayElement.offsetWidth; // Force reflow
+            displayElement.classList.add('shake');
+            
+            // Affichage principal : si > 60 min, afficher en heures
+            if (totalMinutes >= 60) {
+                displayElement.textContent = `${hours}h ${minutes}min`;
+            } else {
+                displayElement.textContent = `${totalMinutes} min`;
+            }
+            
+            // Mise à jour du breakdown
+            hoursElement.textContent = hours;
+            minutesElement.textContent = minutes;
+            
+            // Messages sarcastiques selon le temps perdu
+            if (totalMinutes === 0) {
+                subtitleElement.textContent = "Chaque visite = environ 5 minutes perdues";
+            } else if (totalMinutes < 30) {
+                subtitleElement.textContent = "Pas mal, ça commence à grimper... 😅";
+            } else if (totalMinutes < 60) {
+                subtitleElement.textContent = "Presque une heure de perdue, bravo ! 😬";
+            } else if (totalMinutes < 120) {
+                subtitleElement.textContent = "Plus d'une heure... Tu devrais peut-être bosser ? 🤔";
+            } else if (totalMinutes < 240) {
+                subtitleElement.textContent = "Plusieurs heures perdues, impressionnant ! 😱";
+            } else {
+                subtitleElement.textContent = "Tu es officiellement un pro de la procrastination ! 🏆";
+            }
+        }
+
         // US-02 : Fonction pour mettre à jour le compteur total
         function updateTotalCounter() {
             const totalElement = document.getElementById('total-counter');
@@ -457,6 +627,9 @@
 
             // US-03 : Mettre à jour les statistiques
             updateStats();
+
+            // US-04 : Mettre à jour le temps perdu
+            updateTimeWasted();
             
             // Changer aléatoirement la couleur du bouton cliqué
             const button = event.currentTarget;
@@ -472,10 +645,12 @@
             
             console.log(`Procrastination ajoutée sur ${site}. Total: ${procrastinationData[site]}`);
             console.log(`Total général: ${getTotalProcrastinations()}`);
+            console.log(`Temps perdu: ${calculateTimeWasted().totalMinutes} minutes`);
         }
 
         // Initialiser les statistiques au chargement de la page
         updateStats();
+        updateTimeWasted();
     </script>
 </body>
 </html>
