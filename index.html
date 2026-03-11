@@ -45,6 +45,68 @@
             font-style: italic;
         }
 
+        /* US-07 : Section des citations */
+        .quote-section {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(253, 203, 110, 0.4);
+            border: 3px solid #f39c12;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .quote-section::before {
+            content: '💭';
+            position: absolute;
+            font-size: 6em;
+            opacity: 0.1;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .quote-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(253, 203, 110, 0.6);
+        }
+        .quote-section:active {
+            transform: translateY(0);
+        }
+        .quote-label {
+            text-align: center;
+            color: #d35400;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .quote-text {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.4em;
+            font-style: italic;
+            line-height: 1.6;
+            font-weight: 500;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        .quote-text.fade {
+            opacity: 0;
+        }
+        .quote-hint {
+            text-align: center;
+            color: #d35400;
+            font-size: 0.8em;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
         /* US-06 : Bouton Reset en haut à droite */
         .reset-button {
             position: absolute;
@@ -750,7 +812,9 @@
             .modal-buttons {
                 flex-direction: column;
             }
+            
         }
+
     </style>
 </head>
 <body>
@@ -798,6 +862,13 @@
 
         <h1>ShouldBeWorking 🎯</h1>
         <p class="subtitle">Un compteur de procrastination qui te rappelle gentiment que tu devrais bosser</p>
+
+        <!-- US-07 : Section des citations -->
+        <div class="quote-section" onclick="changeQuote()">
+            <div class="quote-label">💬 Citation du moment</div>
+            <div class="quote-text" id="quote-text">La procrastination est le voleur de temps.</div>
+            <div class="quote-hint">👆 Clique pour changer (ou attends 10 secondes)</div>
+        </div>
 
         <!-- US-02 : Compteur total central -->
         <div class="total-counter-section">
@@ -956,6 +1027,58 @@
                 unlocked: false
             }
         ];
+        // US-07 : Pool de citations motivationnelles/démotivantes
+        const quotes = [
+            "La procrastination est le voleur de temps.",
+            "Tu devrais vraiment bosser là... 🙃",
+            "Encore 5 minutes et tu t'y mets, promis ?",
+            "Spoiler : tu ne vas pas t'y mettre dans 5 minutes.",
+            "Netflix peut attendre. Enfin... peut-être pas.",
+            "Ton futur toi va te détester pour ça.",
+            "Le succès, c'est 1% d'inspiration et 99% de procrastination... wait.",
+            "Fais-le maintenant, remercie-toi plus tard !",
+            "La productivité, c'est surfait de toute façon. 😏",
+            "Aujourd'hui est le jour parfait pour... procrastiner !",
+            "Tu es à un clic de retourner sur YouTube. Résiste !",
+            "Demain, c'est le premier jour du reste de ta procrastination.",
+            "Carpe Diem ! (Mais pas aujourd'hui, hein)",
+            "Le travail, c'est la santé... rien faire, c'est la conserver ! 😂",
+            "Allez, un petit effort ! Ou pas. C'est toi qui vois."
+        ];
+
+        let currentQuoteIndex = 0;
+        let quoteInterval;
+
+        // US-07 : Fonction pour changer de citation
+        function changeQuote() {
+            const quoteElement = document.getElementById('quote-text');
+            
+            // Effet de fade
+            quoteElement.classList.add('fade');
+            
+            setTimeout(() => {
+                // Choisir une citation aléatoire différente de la précédente
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * quotes.length);
+                } while (newIndex === currentQuoteIndex && quotes.length > 1);
+                
+                currentQuoteIndex = newIndex;
+                quoteElement.textContent = quotes[currentQuoteIndex];
+                
+                // Retirer le fade
+                quoteElement.classList.remove('fade');
+            }, 300);
+            
+            // Réinitialiser l'intervalle automatique
+            clearInterval(quoteInterval);
+            startQuoteRotation();
+        }
+
+        // US-07 : Fonction pour démarrer la rotation automatique
+        function startQuoteRotation() {
+            quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
+        }
 
         // US-06 : Fonction pour ouvrir le modal
         function openModal() {
@@ -988,6 +1111,8 @@
             updateTimeWasted();
             updateStats();
             updateAchievementsDisplay();
+            // US-07 : Démarrer la rotation des citations
+            startQuoteRotation();
 
             // Afficher le message de feedback
             showFeedbackMessage();

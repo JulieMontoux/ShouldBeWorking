@@ -37,7 +37,7 @@ En tant que **développeur/étudiant/professionnel**, ce projet permet de **pren
 | US-04 | En tant qu'utilisateur, je veux voir le temps total estimé perdu afin de réaliser l'impact réel de ma procrastination | **S** (Should) | ✅ Livré |
 | US-05 | En tant qu'utilisateur, je veux débloquer des achievements basés sur mon nombre de procrastinations afin de gamifier l'expérience (même si c'est triste) | **S** (Should) | ✅ Livré |
 | US-06 | En tant qu'utilisateur, je veux pouvoir réinitialiser mes statistiques afin de repartir à zéro (et me mentir à moi-même) | **S** (Should) | ✅ Livré |
-| US-07 | En tant qu'utilisateur, je veux voir des citations motivationnelles/démotivantes qui changent afin de me rappeler que je devrais bosser | **C** (Could) | ⏳ En cours |
+| US-07 | En tant qu'utilisateur, je veux voir des citations motivationnelles/démotivantes qui changent afin de me rappeler que je devrais bosser | **C** (Could) | ✅ Livré |
 | US-08 | En tant qu'utilisateur, je veux que mes données persistent entre les sessions afin de ne pas perdre mon historique de procrastination | **C** (Could) | ⏳ En cours |
 | US-09 | En tant qu'utilisateur, je veux des graphiques visuels (chart.js) montrant l'évolution de ma procrastination dans le temps | **C** (Could) | ❌ Reporté |
 | US-10 | En tant qu'utilisateur, je veux recevoir une notification desktop quand je procrastine trop afin d'être rappelé à l'ordre | **W** (Won't) | ❌ Reporté |
