@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShouldBeWorking 🎯</title>
+    <!-- US-09 : Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -125,6 +127,45 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* US-10 : Bouton Notifications en haut à gauche */
+        .notification-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notification-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .notification-button:active {
+            transform: translateY(0);
+        }
+
+        .notification-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #95a5a6;
+        }
+
+        .notification-button.active {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
         }
 
         .reset-button:hover {
@@ -744,6 +785,56 @@
             margin-bottom: 10px;
         }
 
+        /* US-09 : Section des graphiques Chart.js */
+        .charts-section {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .charts-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .charts-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -759,6 +850,14 @@
                 right: 15px;
                 padding: 10px 15px;
                 font-size: 0.85em;
+            }
+
+            .notification-button {
+                top: 15px;
+                left: 15px;
+                padding: 10px 15px;
+                font-size: 0.85em;
+                gap: 5px;
             }
 
             .total-counter-value {
@@ -812,6 +911,14 @@
             .modal-buttons {
                 flex-direction: column;
             }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-canvas-wrapper {
+                height: 250px;
+            }
             
         }
 
@@ -855,6 +962,12 @@
     </div>
 
     <div class="container">
+        <!-- US-10 : Bouton Notifications -->
+        <button class="notification-button" id="notification-button" onclick="toggleNotifications()">
+            <span id="notif-icon">🔔</span>
+            <span id="notif-text">Activer notifications</span>
+        </button>
+
         <!-- US-06 : Bouton Reset -->
         <button class="reset-button" onclick="openModal()">
             🔄 Reset
@@ -955,6 +1068,28 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- US-09 : Graphiques d'évolution Chart.js -->
+        <div class="charts-section">
+            <h3>📈 Graphiques d'évolution</h3>
+            <p class="charts-subtitle">Visualise ta procrastination dans le temps</p>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">📊 Comparaison par site</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="sitesChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">📉 Évolution sur 7 jours</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -970,6 +1105,54 @@
             'TikTok': 0,
             'Facebook': 0
         };
+
+        // US-09 : Variables pour les graphiques Chart.js
+        let sitesChart = null;
+        let evolutionChart = null;
+        
+        // US-09 : Historique simulé sur 7 jours (pour démonstration)
+        let weeklyHistory = [];
+
+        // US-10 : Variables pour les notifications desktop
+        let notificationsEnabled = false;
+        const NOTIFICATION_THRESHOLD = 10; // Notification après 10 procrastinations
+        let lastNotificationCount = 0;
+
+        // US-10 : Messages pour les notifications
+        const notificationMessages = [
+            {
+                title: "🚨 Alerte Procrastination !",
+                body: "Tu as déjà procrastiné 10 fois... Tu ne devrais pas bosser là ?"
+            },
+            {
+                title: "⏰ Rappel Productivité",
+                body: "Hey ! Ça fait un moment que tu cliques partout. Retourne bosser ! 😅"
+            },
+            {
+                title: "🎯 ShouldBeWorking te surveille",
+                body: "10 procrastinations de plus ! Ton futur toi va te détester pour ça."
+            },
+            {
+                title: "💼 Message de ton boss imaginaire",
+                body: "J'ai remarqué que tu procrastinais beaucoup. On doit parler. 😬"
+            },
+            {
+                title: "📊 Stats en temps réel",
+                body: "Encore 10 visites sur les réseaux sociaux. La productivité, ça te dit quelque chose ?"
+            },
+            {
+                title: "🔔 Notification inutile",
+                body: "Mais bon, puisque t'es déjà distrait(e), autant continuer non ? 🙃"
+            },
+            {
+                title: "⚠️ Attention !",
+                body: "Si tu continues comme ça, tu vas battre ton record de procrastination !"
+            },
+            {
+                title: "💡 Idée du jour",
+                body: "Et si tu essayais de... travailler ? Juste une idée comme ça."
+            }
+        ];
 
         // US-05 : Définition des achievements
         const achievements = [
@@ -1083,28 +1266,6 @@
             quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
         }
 
-        // US-07 : Pool de citations motivationnelles/démotivantes
-        const quotes = [
-            "La procrastination est le voleur de temps.",
-            "Tu devrais vraiment bosser là... 🙃",
-            "Encore 5 minutes et tu t'y mets, promis ?",
-            "Spoiler : tu ne vas pas t'y mettre dans 5 minutes.",
-            "Netflix peut attendre. Enfin... peut-être pas.",
-            "Ton futur toi va te détester pour ça.",
-            "Le succès, c'est 1% d'inspiration et 99% de procrastination... wait.",
-            "Fais-le maintenant, remercie-toi plus tard !",
-            "La productivité, c'est surfait de toute façon. 😏",
-            "Aujourd'hui est le jour parfait pour... procrastiner !",
-            "Tu es à un clic de retourner sur YouTube. Résiste !",
-            "Demain, c'est le premier jour du reste de ta procrastination.",
-            "Carpe Diem ! (Mais pas aujourd'hui, hein)",
-            "Le travail, c'est la santé... rien faire, c'est la conserver ! 😂",
-            "Allez, un petit effort ! Ou pas. C'est toi qui vois."
-        ];
-
-        let currentQuoteIndex = 0;
-        let quoteInterval;
-
         // US-08 : Fonction pour sauvegarder dans le localStorage
         function saveToLocalStorage() {
             try {
@@ -1205,6 +1366,154 @@
             quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
         }
 
+        // US-10 : Fonction pour vérifier le support des notifications
+        function checkNotificationSupport() {
+            if (!("Notification" in window)) {
+                console.log("❌ Ce navigateur ne supporte pas les notifications desktop");
+                return false;
+            }
+            return true;
+        }
+
+        // US-10 : Fonction pour activer/désactiver les notifications
+        async function toggleNotifications() {
+            console.log("🔔 toggleNotifications appelée");
+            console.log("   - notificationsEnabled avant:", notificationsEnabled);
+            
+            if (!checkNotificationSupport()) {
+                alert("Ton navigateur ne supporte pas les notifications desktop 😢");
+                return;
+            }
+
+            const button = document.getElementById('notification-button');
+            const icon = document.getElementById('notif-icon');
+            const text = document.getElementById('notif-text');
+
+            if (!notificationsEnabled) {
+                // Demander la permission
+                console.log("   - Demande de permission...");
+                try {
+                    const permission = await Notification.requestPermission();
+                    console.log("   - Permission obtenue:", permission);
+                    
+                    if (permission === "granted") {
+                        notificationsEnabled = true;
+                        button.classList.add('active');
+                        icon.textContent = '🔔';
+                        text.textContent = 'Notifications activées';
+                        
+                        console.log("✅ Notifications activées via bouton");
+                        console.log("   - notificationsEnabled après:", notificationsEnabled);
+                        
+                        // Notification de test (version simplifiée)
+                        try {
+                            const testNotif = new Notification("✅ Notifications activées !", {
+                                body: "Tu seras rappelé à l'ordre toutes les 10 procrastinations 😅",
+                                tag: 'activation-test'
+                            });
+                            
+                            testNotif.onclick = function() {
+                                window.focus();
+                                testNotif.close();
+                            };
+                        } catch (error) {
+                            console.error('Erreur notification de test:', error);
+                        }
+                    } else if (permission === "denied") {
+                        button.classList.add('disabled');
+                        icon.textContent = '🔕';
+                        text.textContent = 'Refusées';
+                        alert("Tu as refusé les notifications. Active-les dans les paramètres de ton navigateur si tu changes d'avis !");
+                    }
+                } catch (error) {
+                    console.error("Erreur lors de la demande de permission:", error);
+                }
+            } else {
+                // Désactiver les notifications
+                notificationsEnabled = false;
+                button.classList.remove('active');
+                icon.textContent = '🔔';
+                text.textContent = 'Activer notifications';
+                console.log("🔕 Notifications désactivées");
+                console.log("   - notificationsEnabled après:", notificationsEnabled);
+            }
+        }
+
+        // US-10 : Fonction pour envoyer une notification de rappel
+        function sendProcrastinationNotification() {
+            if (!notificationsEnabled || !checkNotificationSupport()) {
+                return;
+            }
+
+            // Vérifier si on a atteint le seuil
+            const total = getTotalProcrastinations();
+            const threshold = Math.floor(total / NOTIFICATION_THRESHOLD);
+            
+            if (threshold > lastNotificationCount) {
+                lastNotificationCount = threshold;
+                
+                // Choisir un message aléatoire
+                const randomMessage = notificationMessages[Math.floor(Math.random() * notificationMessages.length)];
+                
+                // Envoyer la notification (version simplifiée sans icônes problématiques)
+                try {
+                    const notification = new Notification(randomMessage.title, {
+                        body: randomMessage.body,
+                        requireInteraction: false,
+                        silent: false,
+                        tag: 'procrastination-alert'
+                    });
+
+                    // Action au clic sur la notification
+                    notification.onclick = function() {
+                        window.focus();
+                        notification.close();
+                    };
+
+                    console.log(`🔔 Notification envoyée après ${total} procrastinations`);
+                } catch (error) {
+                    console.error('❌ Erreur lors de l\'envoi de la notification:', error);
+                }
+            }
+        }
+
+        // US-10 : Fonction pour mettre à jour le statut du bouton au chargement
+        function updateNotificationButtonState() {
+            console.log("🔍 updateNotificationButtonState appelée");
+            console.log("   - Notification support:", checkNotificationSupport());
+            console.log("   - Notification.permission:", Notification.permission);
+            
+            if (!checkNotificationSupport()) {
+                const button = document.getElementById('notification-button');
+                button.classList.add('disabled');
+                button.disabled = true;
+                document.getElementById('notif-text').textContent = 'Non supporté';
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                const button = document.getElementById('notification-button');
+                const icon = document.getElementById('notif-icon');
+                const text = document.getElementById('notif-text');
+                
+                notificationsEnabled = true;
+                button.classList.add('active');
+                icon.textContent = '🔔';
+                text.textContent = 'Notifications activées';
+                
+                console.log("✅ Notifications auto-activées (permission déjà granted)");
+                console.log("   - notificationsEnabled:", notificationsEnabled);
+            } else if (Notification.permission === "denied") {
+                const button = document.getElementById('notification-button');
+                button.classList.add('disabled');
+                document.getElementById('notif-icon').textContent = '🔕';
+                document.getElementById('notif-text').textContent = 'Refusées';
+                console.log("❌ Notifications refusées par l'utilisateur");
+            } else {
+                console.log("⏳ Permission pas encore demandée (default)");
+            }
+        }
+
         // US-06 : Fonction pour ouvrir le modal
         function openModal() {
             document.getElementById('modal-overlay').classList.add('show');
@@ -1231,6 +1540,9 @@
                 achievement.unlocked = false;
             });
 
+            // US-10 : Réinitialiser le compteur de notifications
+            lastNotificationCount = 0;
+
             // US-08 : Sauvegarder l'état réinitialisé
             saveToLocalStorage();
 
@@ -1239,6 +1551,10 @@
             updateTimeWasted();
             updateStats();
             updateAchievementsDisplay();
+            
+            // US-09 : Réinitialiser les graphiques
+            updateCharts();
+            
             // US-07 : Démarrer la rotation des citations
             startQuoteRotation();
 
@@ -1422,6 +1738,146 @@
             });
         }
 
+        // US-09 : Fonction pour initialiser le graphique de comparaison par site
+        function initSitesChart() {
+            const ctx = document.getElementById('sitesChart').getContext('2d');
+            
+            sitesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['YouTube', 'Twitter/X', 'Reddit', 'Instagram', 'TikTok', 'Facebook'],
+                    datasets: [{
+                        label: 'Nombre de visites',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 0, 0, 0.7)',      // YouTube - Rouge
+                            'rgba(29, 161, 242, 0.7)',   // Twitter - Bleu
+                            'rgba(255, 69, 0, 0.7)',     // Reddit - Orange
+                            'rgba(193, 53, 132, 0.7)',   // Instagram - Rose
+                            'rgba(0, 0, 0, 0.7)',        // TikTok - Noir
+                            'rgba(24, 119, 242, 0.7)'    // Facebook - Bleu
+                        ],
+                        borderColor: [
+                            'rgba(255, 0, 0, 1)',
+                            'rgba(29, 161, 242, 1)',
+                            'rgba(255, 69, 0, 1)',
+                            'rgba(193, 53, 132, 1)',
+                            'rgba(0, 0, 0, 1)',
+                            'rgba(24, 119, 242, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' visites';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // US-09 : Fonction pour initialiser le graphique d'évolution
+        function initEvolutionChart() {
+            const ctx = document.getElementById('evolutionChart').getContext('2d');
+            
+            // Générer les 7 derniers jours
+            const days = [];
+            const today = new Date();
+            for (let i = 6; i >= 0; i--) {
+                const day = new Date(today);
+                day.setDate(day.getDate() - i);
+                days.push(day.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }));
+            }
+            
+            evolutionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Procrastinations par jour',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' procrastinations';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // US-09 : Fonction pour mettre à jour les graphiques
+        function updateCharts() {
+            // Mise à jour du graphique par site
+            if (sitesChart) {
+                sitesChart.data.datasets[0].data = [
+                    procrastinationData['YouTube'],
+                    procrastinationData['Twitter/X'],
+                    procrastinationData['Reddit'],
+                    procrastinationData['Instagram'],
+                    procrastinationData['TikTok'],
+                    procrastinationData['Facebook']
+                ];
+                sitesChart.update();
+            }
+            
+            // Mise à jour du graphique d'évolution
+            // Pour la démo, on accumule les visites du jour actuel (index 6)
+            if (evolutionChart) {
+                const currentTotal = getTotalProcrastinations();
+                evolutionChart.data.datasets[0].data[6] = currentTotal;
+                evolutionChart.update();
+            }
+        }
+
         // US-01 : Fonction pour ajouter une procrastination
         function addProcrastination(site) {
             procrastinationData[site]++;
@@ -1440,6 +1896,12 @@
 
             // US-05 : Vérifier les achievements
             checkAchievements();
+
+            // US-09 : Mettre à jour les graphiques
+            updateCharts();
+
+            // US-10 : Envoyer une notification si nécessaire
+            sendProcrastinationNotification();
 
             // US-08 : Sauvegarder automatiquement après chaque clic
             saveToLocalStorage();
@@ -1474,11 +1936,21 @@
             updateTimeWasted();
             updateAchievementsDisplay();
             
+            // US-09 : Initialiser les graphiques Chart.js
+            initSitesChart();
+            initEvolutionChart();
+            updateCharts(); // Mettre à jour avec les données existantes
+            
+            // US-10 : Mettre à jour le statut du bouton notifications
+            updateNotificationButtonState();
+            
             // Démarrer la rotation des citations
             startQuoteRotation();
             
             if (!hasExistingData) {
                 console.log('👋 Bienvenue ! Commence à tracker ta procrastination en cliquant sur les boutons.');
+            } else {
+                console.log('📊 Données chargées depuis le localStorage');
             }
         });
     </script>
