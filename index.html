@@ -44,7 +44,7 @@
             font-style: italic;
         }
 
-        /* NOUVEAU : Compteur total central */
+        /* US-02 : Compteur total central */
         .total-counter-section {
             text-align: center;
             margin: 30px 0;
@@ -200,6 +200,94 @@
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
         }
 
+        /* US-03 : Styles pour la section statistiques */
+        .stats-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        .stats-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stats-table th {
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+
+        .stats-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stats-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .stats-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .stats-table tbody tr:hover {
+            background: #f1f3f5;
+            transform: translateX(5px);
+        }
+
+        .site-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .count-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .percentage {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -216,6 +304,19 @@
             .buttons-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .stats-section {
+                padding: 20px;
+            }
+
+            .stats-table {
+                font-size: 0.9em;
+            }
+
+            .stats-table th,
+            .stats-table td {
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -224,13 +325,14 @@
         <h1>ShouldBeWorking 🎯</h1>
         <p class="subtitle">Un compteur de procrastination qui te rappelle gentiment que tu devrais bosser</p>
 
-        <!-- NOUVEAU : Compteur total central -->
+        <!-- US-02 : Compteur total central -->
         <div class="total-counter-section">
             <div class="total-counter-label">Total Procrastinations</div>
             <div class="total-counter-value" id="total-counter">0</div>
             <div class="total-counter-subtitle">Bravo, tu es un champion 🏆</div>
         </div>
 
+        <!-- US-01 : Boutons pour comptabiliser les procrastinations -->
         <div class="buttons-grid">
             <button class="site-button" onclick="addProcrastination('YouTube')">
                 <span class="emoji">📺</span>
@@ -263,6 +365,24 @@
                 <span class="site-counter" id="counter-Facebook">0</span>
             </button>
         </div>
+
+        <!-- US-03 : Statistiques détaillées par site -->
+        <div class="stats-section">
+            <h3>📊 Statistiques détaillées</h3>
+            <p class="stats-subtitle">Découvre quel réseau social te distrait le plus</p>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Site</th>
+                        <th>Visites</th>
+                        <th>Pourcentage</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-body">
+                    <!-- Les lignes seront générées dynamiquement par JavaScript -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -276,12 +396,12 @@
             'Facebook': 0
         };
 
-        // NOUVEAU : Fonction pour calculer le total
+        // US-02 : Fonction pour calculer le total
         function getTotalProcrastinations() {
             return Object.values(procrastinationData).reduce((sum, count) => sum + count, 0);
         }
 
-        // NOUVEAU : Fonction pour mettre à jour le compteur total
+        // US-02 : Fonction pour mettre à jour le compteur total
         function updateTotalCounter() {
             const totalElement = document.getElementById('total-counter');
             const total = getTotalProcrastinations();
@@ -295,15 +415,48 @@
             totalElement.textContent = total;
         }
 
-        // Fonction pour ajouter une procrastination (MODIFIÉE)
+        // US-03 : Fonction pour mettre à jour les statistiques détaillées
+        function updateStats() {
+            const total = getTotalProcrastinations();
+            const sites = ['YouTube', 'Twitter/X', 'Reddit', 'Instagram', 'TikTok', 'Facebook'];
+            const emojis = {
+                'YouTube': '📺',
+                'Twitter/X': '🐦',
+                'Reddit': '🤖',
+                'Instagram': '📷',
+                'TikTok': '🎵',
+                'Facebook': '👥'
+            };
+
+            const statsBody = document.getElementById('stats-body');
+            statsBody.innerHTML = '';
+
+            sites.forEach(site => {
+                const count = procrastinationData[site];
+                const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="site-name">${emojis[site]} ${site}</td>
+                    <td><span class="count-badge">${count}</span></td>
+                    <td><span class="percentage">${percentage}%</span></td>
+                `;
+                statsBody.appendChild(row);
+            });
+        }
+
+        // US-01 : Fonction pour ajouter une procrastination
         function addProcrastination(site) {
             procrastinationData[site]++;
             
             // Mettre à jour le compteur visuel du bouton
             document.getElementById(`counter-${site}`).textContent = procrastinationData[site];
             
-            // NOUVEAU : Mettre à jour le compteur total
+            // US-02 : Mettre à jour le compteur total
             updateTotalCounter();
+
+            // US-03 : Mettre à jour les statistiques
+            updateStats();
             
             // Changer aléatoirement la couleur du bouton cliqué
             const button = event.currentTarget;
@@ -320,6 +473,9 @@
             console.log(`Procrastination ajoutée sur ${site}. Total: ${procrastinationData[site]}`);
             console.log(`Total général: ${getTotalProcrastinations()}`);
         }
+
+        // Initialiser les statistiques au chargement de la page
+        updateStats();
     </script>
 </body>
 </html>
