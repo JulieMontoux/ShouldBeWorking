@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShouldBeWorking 🎯</title>
+    <!-- US-09 : Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -744,6 +746,56 @@
             margin-bottom: 10px;
         }
 
+        /* US-09 : Section des graphiques Chart.js */
+        .charts-section {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .charts-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .charts-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -811,6 +863,14 @@
 
             .modal-buttons {
                 flex-direction: column;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-canvas-wrapper {
+                height: 250px;
             }
             
         }
@@ -955,6 +1015,28 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- US-09 : Graphiques d'évolution Chart.js -->
+        <div class="charts-section">
+            <h3>📈 Graphiques d'évolution</h3>
+            <p class="charts-subtitle">Visualise ta procrastination dans le temps</p>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">📊 Comparaison par site</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="sitesChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">📉 Évolution sur 7 jours</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -970,6 +1052,13 @@
             'TikTok': 0,
             'Facebook': 0
         };
+
+        // US-09 : Variables pour les graphiques Chart.js
+        let sitesChart = null;
+        let evolutionChart = null;
+        
+        // US-09 : Historique simulé sur 7 jours (pour démonstration)
+        let weeklyHistory = [];
 
         // US-05 : Définition des achievements
         const achievements = [
@@ -1082,28 +1171,6 @@
         function startQuoteRotation() {
             quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
         }
-
-        // US-07 : Pool de citations motivationnelles/démotivantes
-        const quotes = [
-            "La procrastination est le voleur de temps.",
-            "Tu devrais vraiment bosser là... 🙃",
-            "Encore 5 minutes et tu t'y mets, promis ?",
-            "Spoiler : tu ne vas pas t'y mettre dans 5 minutes.",
-            "Netflix peut attendre. Enfin... peut-être pas.",
-            "Ton futur toi va te détester pour ça.",
-            "Le succès, c'est 1% d'inspiration et 99% de procrastination... wait.",
-            "Fais-le maintenant, remercie-toi plus tard !",
-            "La productivité, c'est surfait de toute façon. 😏",
-            "Aujourd'hui est le jour parfait pour... procrastiner !",
-            "Tu es à un clic de retourner sur YouTube. Résiste !",
-            "Demain, c'est le premier jour du reste de ta procrastination.",
-            "Carpe Diem ! (Mais pas aujourd'hui, hein)",
-            "Le travail, c'est la santé... rien faire, c'est la conserver ! 😂",
-            "Allez, un petit effort ! Ou pas. C'est toi qui vois."
-        ];
-
-        let currentQuoteIndex = 0;
-        let quoteInterval;
 
         // US-08 : Fonction pour sauvegarder dans le localStorage
         function saveToLocalStorage() {
@@ -1239,6 +1306,10 @@
             updateTimeWasted();
             updateStats();
             updateAchievementsDisplay();
+            
+            // US-09 : Réinitialiser les graphiques
+            updateCharts();
+            
             // US-07 : Démarrer la rotation des citations
             startQuoteRotation();
 
@@ -1422,6 +1493,146 @@
             });
         }
 
+        // US-09 : Fonction pour initialiser le graphique de comparaison par site
+        function initSitesChart() {
+            const ctx = document.getElementById('sitesChart').getContext('2d');
+            
+            sitesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['YouTube', 'Twitter/X', 'Reddit', 'Instagram', 'TikTok', 'Facebook'],
+                    datasets: [{
+                        label: 'Nombre de visites',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 0, 0, 0.7)',      // YouTube - Rouge
+                            'rgba(29, 161, 242, 0.7)',   // Twitter - Bleu
+                            'rgba(255, 69, 0, 0.7)',     // Reddit - Orange
+                            'rgba(193, 53, 132, 0.7)',   // Instagram - Rose
+                            'rgba(0, 0, 0, 0.7)',        // TikTok - Noir
+                            'rgba(24, 119, 242, 0.7)'    // Facebook - Bleu
+                        ],
+                        borderColor: [
+                            'rgba(255, 0, 0, 1)',
+                            'rgba(29, 161, 242, 1)',
+                            'rgba(255, 69, 0, 1)',
+                            'rgba(193, 53, 132, 1)',
+                            'rgba(0, 0, 0, 1)',
+                            'rgba(24, 119, 242, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' visites';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // US-09 : Fonction pour initialiser le graphique d'évolution
+        function initEvolutionChart() {
+            const ctx = document.getElementById('evolutionChart').getContext('2d');
+            
+            // Générer les 7 derniers jours
+            const days = [];
+            const today = new Date();
+            for (let i = 6; i >= 0; i--) {
+                const day = new Date(today);
+                day.setDate(day.getDate() - i);
+                days.push(day.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }));
+            }
+            
+            evolutionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Procrastinations par jour',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' procrastinations';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // US-09 : Fonction pour mettre à jour les graphiques
+        function updateCharts() {
+            // Mise à jour du graphique par site
+            if (sitesChart) {
+                sitesChart.data.datasets[0].data = [
+                    procrastinationData['YouTube'],
+                    procrastinationData['Twitter/X'],
+                    procrastinationData['Reddit'],
+                    procrastinationData['Instagram'],
+                    procrastinationData['TikTok'],
+                    procrastinationData['Facebook']
+                ];
+                sitesChart.update();
+            }
+            
+            // Mise à jour du graphique d'évolution
+            // Pour la démo, on accumule les visites du jour actuel (index 6)
+            if (evolutionChart) {
+                const currentTotal = getTotalProcrastinations();
+                evolutionChart.data.datasets[0].data[6] = currentTotal;
+                evolutionChart.update();
+            }
+        }
+
         // US-01 : Fonction pour ajouter une procrastination
         function addProcrastination(site) {
             procrastinationData[site]++;
@@ -1440,6 +1651,9 @@
 
             // US-05 : Vérifier les achievements
             checkAchievements();
+
+            // US-09 : Mettre à jour les graphiques
+            updateCharts();
 
             // US-08 : Sauvegarder automatiquement après chaque clic
             saveToLocalStorage();
@@ -1474,11 +1688,18 @@
             updateTimeWasted();
             updateAchievementsDisplay();
             
+            // US-09 : Initialiser les graphiques Chart.js
+            initSitesChart();
+            initEvolutionChart();
+            updateCharts(); // Mettre à jour avec les données existantes
+            
             // Démarrer la rotation des citations
             startQuoteRotation();
             
             if (!hasExistingData) {
                 console.log('👋 Bienvenue ! Commence à tracker ta procrastination en cliquant sur les boutons.');
+            } else {
+                console.log('📊 Données chargées depuis le localStorage');
             }
         });
     </script>
