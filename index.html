@@ -44,6 +44,63 @@
             font-style: italic;
         }
 
+        /* US-05 : Popup pour les nouveaux achievements */
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(245, 87, 108, 0.6);
+            z-index: 1000;
+            min-width: 300px;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 3px solid white;
+        }
+
+        .achievement-popup.show {
+            transform: translateX(0);
+            opacity: 1;
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0) scale(1); }
+            50% { transform: translateX(-10px) scale(1.05); }
+        }
+
+        .achievement-popup-header {
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .achievement-popup-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .achievement-popup-emoji {
+            font-size: 1.8em;
+        }
+
+        .achievement-popup-description {
+            font-size: 0.95em;
+            opacity: 0.95;
+            margin-top: 8px;
+        }
+
         /* US-02 : Compteur total central */
         .total-counter-section {
             text-align: center;
@@ -377,6 +434,91 @@
             font-size: 1.05em;
         }
 
+        /* US-05 : Section des achievements */
+        .achievements-section {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .achievements-section h3 {
+            color: white;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.8em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .achievements-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 25px;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .achievement-card.unlocked {
+            border-color: #ffd700;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 5px 30px rgba(255, 215, 0, 0.7);
+            }
+        }
+
+        .achievement-card.locked {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        .achievement-emoji {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .achievement-description {
+            color: #666;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .achievement-locked-icon {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -419,10 +561,30 @@
                 flex-direction: column;
                 gap: 15px;
             }
+
+            .achievement-popup {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+
+            .achievements-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- US-05 : Popup pour les nouveaux achievements -->
+    <div class="achievement-popup" id="achievement-popup">
+        <div class="achievement-popup-header">🎉 Nouvel Achievement Débloqué !</div>
+        <div class="achievement-popup-title">
+            <span class="achievement-popup-emoji" id="popup-emoji">🏆</span>
+            <span id="popup-title">Achievement</span>
+        </div>
+        <div class="achievement-popup-description" id="popup-description">Description</div>
+    </div>
+
     <div class="container">
         <h1>ShouldBeWorking 🎯</h1>
         <p class="subtitle">Un compteur de procrastination qui te rappelle gentiment que tu devrais bosser</p>
@@ -486,6 +648,15 @@
             </button>
         </div>
 
+        <!-- US-05 : Section des achievements -->
+        <div class="achievements-section">
+            <h3>🏆 Achievements</h3>
+            <p class="achievements-subtitle">Collection de tes exploits de procrastination</p>
+            <div class="achievements-grid" id="achievements-grid">
+                <!-- Les achievements seront générés dynamiquement par JavaScript -->
+            </div>
+        </div>
+
         <!-- US-03 : Statistiques détaillées par site -->
         <div class="stats-section">
             <h3>📊 Statistiques détaillées</h3>
@@ -515,6 +686,123 @@
             'TikTok': 0,
             'Facebook': 0
         };
+
+        // US-05 : Définition des achievements
+        const achievements = [
+            {
+                id: 'first-time',
+                emoji: '🎯',
+                name: 'Première fois',
+                description: 'Procrastiner pour la première fois',
+                condition: () => getTotalProcrastinations() >= 1,
+                unlocked: false
+            },
+            {
+                id: 'rookie',
+                emoji: '🌱',
+                name: 'Rookie',
+                description: 'Atteindre 10 procrastinations',
+                condition: () => getTotalProcrastinations() >= 10,
+                unlocked: false
+            },
+            {
+                id: 'habitue',
+                emoji: '😅',
+                name: 'Habitué',
+                description: 'Atteindre 25 procrastinations',
+                condition: () => getTotalProcrastinations() >= 25,
+                unlocked: false
+            },
+            {
+                id: 'accro',
+                emoji: '😰',
+                name: 'Accro',
+                description: 'Atteindre 50 procrastinations',
+                condition: () => getTotalProcrastinations() >= 50,
+                unlocked: false
+            },
+            {
+                id: 'master',
+                emoji: '💀',
+                name: 'Maître Procrastinateur',
+                description: 'Atteindre 100 procrastinations',
+                condition: () => getTotalProcrastinations() >= 100,
+                unlocked: false
+            },
+            {
+                id: 'youtube-addict',
+                emoji: '📺',
+                name: 'YouTube Addict',
+                description: '20 visites sur YouTube',
+                condition: () => procrastinationData['YouTube'] >= 20,
+                unlocked: false
+            },
+            {
+                id: 'social-butterfly',
+                emoji: '🦋',
+                name: 'Papillon Social',
+                description: 'Visiter tous les sites au moins une fois',
+                condition: () => Object.values(procrastinationData).every(count => count > 0),
+                unlocked: false
+            }
+        ];
+
+        // US-05 : Fonction pour afficher la popup d'achievement
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievement-popup');
+            const emojiEl = document.getElementById('popup-emoji');
+            const titleEl = document.getElementById('popup-title');
+            const descEl = document.getElementById('popup-description');
+
+            emojiEl.textContent = achievement.emoji;
+            titleEl.textContent = achievement.name;
+            descEl.textContent = achievement.description;
+
+            popup.classList.add('show');
+
+            // Masquer après 4 secondes
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 4000);
+        }
+
+        // US-05 : Fonction pour vérifier et débloquer les achievements
+        function checkAchievements() {
+            achievements.forEach(achievement => {
+                if (!achievement.unlocked && achievement.condition()) {
+                    achievement.unlocked = true;
+                    showAchievementPopup(achievement);
+                }
+            });
+            updateAchievementsDisplay();
+        }
+
+        // US-05 : Fonction pour afficher les achievements
+        function updateAchievementsDisplay() {
+            const grid = document.getElementById('achievements-grid');
+            grid.innerHTML = '';
+
+            achievements.forEach(achievement => {
+                const card = document.createElement('div');
+                card.className = `achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+                
+                if (achievement.unlocked) {
+                    card.innerHTML = `
+                        <span class="achievement-emoji">${achievement.emoji}</span>
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-description">${achievement.description}</div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <span class="achievement-locked-icon">🔒</span>
+                        <div class="achievement-name">???</div>
+                        <div class="achievement-description">Achievement verrouillé</div>
+                    `;
+                }
+                
+                grid.appendChild(card);
+            });
+        }
 
         // US-02 : Fonction pour calculer le total
         function getTotalProcrastinations() {
@@ -630,6 +918,9 @@
 
             // US-04 : Mettre à jour le temps perdu
             updateTimeWasted();
+
+            // US-05 : Vérifier les achievements
+            checkAchievements();
             
             // Changer aléatoirement la couleur du bouton cliqué
             const button = event.currentTarget;
@@ -648,9 +939,10 @@
             console.log(`Temps perdu: ${calculateTimeWasted().totalMinutes} minutes`);
         }
 
-        // Initialiser les statistiques au chargement de la page
+        // Initialiser au chargement de la page
         updateStats();
         updateTimeWasted();
+        updateAchievementsDisplay();
     </script>
 </body>
 </html>
