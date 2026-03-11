@@ -196,9 +196,9 @@ Affiche-le en minutes au-dessus des stats."
 ## Statistiques du projet
 
 - **Temps total** : ~2h30
-- **Commits** : [À compléter après la séance]
-- **Lignes de code** : ~1500 lignes (HTML + CSS + JS)
-- **User Stories livrées** : 8/10
+- **Commits** : 33
+- **Lignes de code** : ~1950 lignes (HTML + CSS + JS)
+- **User Stories livrées** : 10/10
 - **Taux de complétion MVP** : 100% (3/3 Must Have)
 
 ---
