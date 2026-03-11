@@ -28,6 +28,7 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 800px;
             width: 100%;
+            position: relative;
         }
 
         h1 {
@@ -42,6 +43,168 @@
             color: #666;
             margin-bottom: 30px;
             font-style: italic;
+        }
+
+        /* US-06 : Bouton Reset en haut à droite */
+        .reset-button {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 107, 107, 0.5);
+            background: linear-gradient(135deg, #ee5a24 0%, #c23616 100%);
+        }
+
+        .reset-button:active {
+            transform: translateY(0);
+        }
+
+        /* US-06 : Modal de confirmation */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+            text-align: center;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-emoji {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .modal-text {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button-cancel {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .modal-button-cancel:hover {
+            background: #dee2e6;
+            transform: translateY(-2px);
+        }
+
+        .modal-button-confirm {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .modal-button-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 107, 107, 0.5);
+        }
+
+        /* US-06 : Message de feedback après reset */
+        .feedback-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(67, 233, 123, 0.6);
+            z-index: 1001;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .feedback-message.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .feedback-emoji {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 10px;
         }
 
         /* US-05 : Popup pour les nouveaux achievements */
@@ -522,10 +685,18 @@
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
+                padding-top: 60px;
             }
 
             h1 {
                 font-size: 2em;
+            }
+
+            .reset-button {
+                top: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 0.85em;
             }
 
             .total-counter-value {
@@ -571,10 +742,44 @@
             .achievements-grid {
                 grid-template-columns: 1fr;
             }
+
+            .modal {
+                padding: 25px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- US-06 : Modal de confirmation -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-emoji">🗑️</div>
+            <div class="modal-title">Réinitialiser tout ?</div>
+            <div class="modal-text">
+                Es-tu sûr(e) de vouloir tout effacer ? Toutes tes statistiques et achievements seront perdus.<br>
+                <em>(Parfait pour se mentir à soi-même sur sa productivité 😅)</em>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-cancel" onclick="closeModal()">
+                    Annuler
+                </button>
+                <button class="modal-button modal-button-confirm" onclick="confirmReset()">
+                    Oui, tout effacer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- US-06 : Message de feedback -->
+    <div class="feedback-message" id="feedback-message">
+        <span class="feedback-emoji">✨</span>
+        Tout est effacé ! Nouveau départ 🎯
+    </div>
+
     <!-- US-05 : Popup pour les nouveaux achievements -->
     <div class="achievement-popup" id="achievement-popup">
         <div class="achievement-popup-header">🎉 Nouvel Achievement Débloqué !</div>
@@ -586,6 +791,11 @@
     </div>
 
     <div class="container">
+        <!-- US-06 : Bouton Reset -->
+        <button class="reset-button" onclick="openModal()">
+            🔄 Reset
+        </button>
+
         <h1>ShouldBeWorking 🎯</h1>
         <p class="subtitle">Un compteur de procrastination qui te rappelle gentiment que tu devrais bosser</p>
 
@@ -746,6 +956,62 @@
                 unlocked: false
             }
         ];
+
+        // US-06 : Fonction pour ouvrir le modal
+        function openModal() {
+            document.getElementById('modal-overlay').classList.add('show');
+        }
+
+        // US-06 : Fonction pour fermer le modal
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+        }
+
+        // US-06 : Fonction pour confirmer le reset
+        function confirmReset() {
+            // Fermer le modal
+            closeModal();
+
+            // Réinitialiser toutes les données
+            for (let site in procrastinationData) {
+                procrastinationData[site] = 0;
+                document.getElementById(`counter-${site}`).textContent = '0';
+            }
+
+            // Reverrouiller tous les achievements
+            achievements.forEach(achievement => {
+                achievement.unlocked = false;
+            });
+
+            // Mettre à jour tous les affichages
+            updateTotalCounter();
+            updateTimeWasted();
+            updateStats();
+            updateAchievementsDisplay();
+
+            // Afficher le message de feedback
+            showFeedbackMessage();
+
+            console.log('✨ Toutes les données ont été réinitialisées !');
+        }
+
+        // US-06 : Fonction pour afficher le message de feedback
+        function showFeedbackMessage() {
+            const feedback = document.getElementById('feedback-message');
+            feedback.classList.add('show');
+
+            // Masquer après 3 secondes
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 3000);
+        }
+
+        // Fermer le modal si on clique en dehors
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-overlay') {
+                closeModal();
+            }
+        });
 
         // US-05 : Fonction pour afficher la popup d'achievement
         function showAchievementPopup(achievement) {
