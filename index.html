@@ -45,6 +45,68 @@
             font-style: italic;
         }
 
+        /* US-07 : Section des citations */
+        .quote-section {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(253, 203, 110, 0.4);
+            border: 3px solid #f39c12;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .quote-section::before {
+            content: '💭';
+            position: absolute;
+            font-size: 6em;
+            opacity: 0.1;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .quote-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(253, 203, 110, 0.6);
+        }
+        .quote-section:active {
+            transform: translateY(0);
+        }
+        .quote-label {
+            text-align: center;
+            color: #d35400;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .quote-text {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.4em;
+            font-style: italic;
+            line-height: 1.6;
+            font-weight: 500;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        .quote-text.fade {
+            opacity: 0;
+        }
+        .quote-hint {
+            text-align: center;
+            color: #d35400;
+            font-size: 0.8em;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
         /* US-06 : Bouton Reset en haut à droite */
         .reset-button {
             position: absolute;
@@ -750,7 +812,9 @@
             .modal-buttons {
                 flex-direction: column;
             }
+            
         }
+
     </style>
 </head>
 <body>
@@ -798,6 +862,13 @@
 
         <h1>ShouldBeWorking 🎯</h1>
         <p class="subtitle">Un compteur de procrastination qui te rappelle gentiment que tu devrais bosser</p>
+
+        <!-- US-07 : Section des citations -->
+        <div class="quote-section" onclick="changeQuote()">
+            <div class="quote-label">💬 Citation du moment</div>
+            <div class="quote-text" id="quote-text">La procrastination est le voleur de temps.</div>
+            <div class="quote-hint">👆 Clique pour changer (ou attends 10 secondes)</div>
+        </div>
 
         <!-- US-02 : Compteur total central -->
         <div class="total-counter-section">
@@ -887,8 +958,11 @@
     </div>
 
     <script>
+        // US-08 : Clé pour le localStorage
+        const STORAGE_KEY = 'shouldBeWorking_data';
+
         // Données de procrastination
-        const procrastinationData = {
+        let procrastinationData = {
             'YouTube': 0,
             'Twitter/X': 0,
             'Reddit': 0,
@@ -957,6 +1031,128 @@
             }
         ];
 
+        // US-07 : Pool de citations motivationnelles/démotivantes
+        const quotes = [
+            "La procrastination est le voleur de temps.",
+            "Tu devrais vraiment bosser là... 🙃",
+            "Encore 5 minutes et tu t'y mets, promis ?",
+            "Spoiler : tu ne vas pas t'y mettre dans 5 minutes.",
+            "Netflix peut attendre. Enfin... peut-être pas.",
+            "Ton futur toi va te détester pour ça.",
+            "Le succès, c'est 1% d'inspiration et 99% de procrastination... wait.",
+            "Fais-le maintenant, remercie-toi plus tard !",
+            "La productivité, c'est surfait de toute façon. 😏",
+            "Aujourd'hui est le jour parfait pour... procrastiner !",
+            "Tu es à un clic de retourner sur YouTube. Résiste !",
+            "Demain, c'est le premier jour du reste de ta procrastination.",
+            "Carpe Diem ! (Mais pas aujourd'hui, hein)",
+            "Le travail, c'est la santé... rien faire, c'est la conserver ! 😂",
+            "Allez, un petit effort ! Ou pas. C'est toi qui vois."
+        ];
+
+        let currentQuoteIndex = 0;
+        let quoteInterval;
+
+        // US-08 : Fonction pour sauvegarder dans le localStorage
+        function saveToLocalStorage() {
+            try {
+                const dataToSave = {
+                    procrastinationData: procrastinationData,
+                    achievements: achievements.map(a => ({
+                        id: a.id,
+                        unlocked: a.unlocked
+                    })),
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                console.log('💾 Données sauvegardées dans localStorage');
+            } catch (error) {
+                console.error('❌ Erreur lors de la sauvegarde:', error);
+            }
+        }
+
+        // US-08 : Fonction pour charger depuis le localStorage
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    
+                    // Restaurer les données de procrastination
+                    if (parsed.procrastinationData) {
+                        procrastinationData = parsed.procrastinationData;
+                        
+                        // Mettre à jour les compteurs visuels
+                        for (let site in procrastinationData) {
+                            const counterElement = document.getElementById(`counter-${site}`);
+                            if (counterElement) {
+                                counterElement.textContent = procrastinationData[site];
+                            }
+                        }
+                    }
+                    
+                    // Restaurer les achievements débloqués
+                    if (parsed.achievements) {
+                        parsed.achievements.forEach(savedAchievement => {
+                            const achievement = achievements.find(a => a.id === savedAchievement.id);
+                            if (achievement) {
+                                achievement.unlocked = savedAchievement.unlocked;
+                            }
+                        });
+                    }
+                    
+                    console.log('✅ Données chargées depuis localStorage');
+                    console.log('📊 Total procrastinations:', getTotalProcrastinations());
+                    
+                    // Afficher un message de bienvenue
+                    const total = getTotalProcrastinations();
+                    if (total > 0) {
+                        console.log(`👋 Bon retour ! Tu as déjà ${total} procrastinations à ton compteur.`);
+                    }
+                    
+                    return true;
+                } else {
+                    console.log('🆕 Première visite ! Aucune donnée sauvegardée.');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement:', error);
+                return false;
+            }
+        }
+
+        // US-07 : Fonction pour changer de citation
+        function changeQuote() {
+            const quoteElement = document.getElementById('quote-text');
+            
+            // Effet de fade
+            quoteElement.classList.add('fade');
+            
+            setTimeout(() => {
+                // Choisir une citation aléatoire différente de la précédente
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * quotes.length);
+                } while (newIndex === currentQuoteIndex && quotes.length > 1);
+                
+                currentQuoteIndex = newIndex;
+                quoteElement.textContent = quotes[currentQuoteIndex];
+                
+                // Retirer le fade
+                quoteElement.classList.remove('fade');
+            }, 300);
+            
+            // Réinitialiser l'intervalle automatique
+            clearInterval(quoteInterval);
+            startQuoteRotation();
+        }
+
+        // US-07 : Fonction pour démarrer la rotation automatique
+        function startQuoteRotation() {
+            quoteInterval = setInterval(changeQuote, 10000); // 10 secondes
+        }
+
         // US-06 : Fonction pour ouvrir le modal
         function openModal() {
             document.getElementById('modal-overlay').classList.add('show');
@@ -983,6 +1179,9 @@
                 achievement.unlocked = false;
             });
 
+            // US-08 : Sauvegarder l'état réinitialisé
+            saveToLocalStorage();
+
             // Mettre à jour tous les affichages
             updateTotalCounter();
             updateTimeWasted();
@@ -992,7 +1191,7 @@
             // Afficher le message de feedback
             showFeedbackMessage();
 
-            console.log('✨ Toutes les données ont été réinitialisées !');
+            console.log('✨ Toutes les données ont été réinitialisées et sauvegardées !');
         }
 
         // US-06 : Fonction pour afficher le message de feedback
@@ -1187,6 +1386,9 @@
 
             // US-05 : Vérifier les achievements
             checkAchievements();
+
+            // US-08 : Sauvegarder automatiquement après chaque clic
+            saveToLocalStorage();
             
             // Changer aléatoirement la couleur du bouton cliqué
             const button = event.currentTarget;
@@ -1205,10 +1407,26 @@
             console.log(`Temps perdu: ${calculateTimeWasted().totalMinutes} minutes`);
         }
 
-        // Initialiser au chargement de la page
-        updateStats();
-        updateTimeWasted();
-        updateAchievementsDisplay();
+        // US-08 : Initialiser au chargement de la page
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Application ShouldBeWorking chargée');
+            
+            // Charger les données sauvegardées
+            const hasExistingData = loadFromLocalStorage();
+            
+            // Mettre à jour l'affichage avec les données chargées
+            updateTotalCounter();
+            updateStats();
+            updateTimeWasted();
+            updateAchievementsDisplay();
+            
+            // Démarrer la rotation des citations
+            startQuoteRotation();
+            
+            if (!hasExistingData) {
+                console.log('👋 Bienvenue ! Commence à tracker ta procrastination en cliquant sur les boutons.');
+            }
+        });
     </script>
 </body>
 </html>
